@@ -1,6 +1,6 @@
 # Compiler
-CXX = g++  # Use g++ for C++ files
-CXXFLAGS = -Wall -g -std=c++98  # Enable warnings, debugging, and C++98 standard
+CXX = g++ -g3  # Use g++ for C++ files
+CXXFLAGS = -Wall -g3  # Enable warnings, debugging
 
 # Targets
 TARGETS = oss user
