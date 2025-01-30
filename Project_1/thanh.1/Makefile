@@ -1,3 +1,8 @@
+#Create by Thanh Dat Nguyen on 2025-01-30
+#Last update by Thanh Dat Nguyen on 2025-01-30
+
+# Makefile for Skeleton multiple process program
+
 # Compiler
 CXX = g++ -g3  # Use g++ for C++ files
 CXXFLAGS = -Wall -g3  # Enable warnings, debugging
