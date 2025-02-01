@@ -1,5 +1,6 @@
 #Create by Thanh Dat Nguyen on 2025-01-30
-#Last update by Thanh Dat Nguyen on 2025-01-30
+
+#Last update by Thanh Dat Nguyen on 2025-02-01
 
 # Makefile for Skeleton multiple process program
 
@@ -14,12 +15,16 @@ TARGETS = oss user
 all: $(TARGETS)
 
 # Compile oss
-oss: oss.cpp
-	$(CXX) $(CXXFLAGS) -o oss oss.cpp
+oss: oss.cpp Process.o
+	$(CXX) $(CXXFLAGS) -o oss oss.cpp Process.o
 
 # Compile user
 user: user.cpp
 	$(CXX) $(CXXFLAGS) -o user user.cpp
+
+# Compile Process
+Process.o: Process.cpp Process.h
+	$(CXX) $(CXXFLAGS) -c Process.cpp
 
 # Clean up object files and executables
 clean:
