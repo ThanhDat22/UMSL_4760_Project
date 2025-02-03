@@ -1,5 +1,6 @@
 // Created by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-01-30
-// Last edited by Thanh Dat Nguyen (tnrbf@ymsystem.edu) on 2025-01-30 
+
+// Last edited by Thanh Dat Nguyen (tnrbf@ymsystem.edu) on 2025-02-01 
 
 // user.cpp is a program that takes a number of iterations as a command line argument and prints out the process ID, parent process ID, and iteration number before and after sleeping for 1 second.
 
@@ -61,9 +62,9 @@ void run_iterations(int num_of_iterations) {
     pid_t pid = getpid(); // Get the process ID
     pid_t ppid = getppid(); // Get the parent process ID
 
-    for (int i = 1; i < num_of_iterations + 1; i++) {
-        cout << "USER PID:" << pid << " PPID:" << ppid << " Iteration:" << i << " before sleeping" << endl;
+    for (int i = 1; i <= num_of_iterations; i++) {
+        cout << "User PID:" << pid << " PPID:" << ppid << " Iteration:" << i << " before sleeping" << endl;
         sleep(1);
-        cout << "USER PID:" << pid << " PPID:" << ppid << " Iteration:" << i << " after sleeping" << endl;
+        cout << "User PID:" << pid << " PPID:" << ppid << " Iteration:" << i << " after sleeping" << endl;
     }
 }

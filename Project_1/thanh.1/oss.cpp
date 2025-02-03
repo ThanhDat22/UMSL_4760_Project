@@ -1,5 +1,8 @@
 // Created by Thanh Dat Nguyen on 2025-01-31
-// Last modified by Thanh Dat Nguyen on 2025-01-31
+
+// Last modified by Thanh Dat Nguyen on 2025-02-01
+
+#include "Process.h"
 
 #include <iostream>
 #include <cstdlib> // For exit()
@@ -11,8 +14,15 @@ using std::endl;
 // Function prototypes
 void print_usage(); // Print usage information
 void parse_arguments(int, char**, int&, int&, int&); // Parse command line arguments
+void manage_processes(int, int, int); // Launch and manage user processes
 
 // Main function
+int main(int argc, char** argv) {
+    int proc = 1, simul = 1, iter = 1; // Default values for number of user processes, maximum number of user processes to allow to run simultaneously, and number of iteration for each user process
+    parse_arguments(argc, argv, proc, simul, iter); // Parse command line arguments
+    manage_processes(proc, simul, iter); // Launch and manage user processes
+    return 0;
+}
 
 // Function definitions
 
@@ -57,3 +67,38 @@ void parse_arguments(int argc, char** argv, int& process, int& simultaneous, int
         } // End switch
     } // End while
 }
+
+/*  Launch and manage user processes
+    * @param process: Number of user processes to launch
+    * @param simultaneous: Maximum number of user processes to allow to run simultaneously
+    * @param iteration: Number of iteration for each user process
+*/
+void manage_processes(int process, int simultaneous, int iteration) {
+    cout << "OSS launching " << process << " user processes, maximum " << simultaneous << " at a time,, each doing " << iteration << " iterations." << endl;
+
+    int running = 0; // Number of running processes
+    vector<Process> processes; // Store user processes
+
+    for (int i = 0; i < process; i++) {
+        if (running >= simultaneous) {
+            processes.front().wait_for_completion(); // Wait for a user process to complete
+            processes.erase(processes.begin()); // Remove the completed user process
+            running--; // Decrement the number of running processes
+        }
+
+        Process temp_process; // Create a new user process
+        temp_process.launch(iteration); // Launch the user process
+        processes.push_back(temp_process); // Add the user process to the vector
+        running++; // Increment the number of running processes
+
+        sleep(1); // Delay for 1 second to avoid process flooding
+    } 
+
+    // Wait for all user processes to complete
+    for (size_t i = 0; i < processes.size(); i++) {
+        processes[i].wait_for_completion();
+    }
+
+    cout << "OSS finished launching and waiting for all user processes. " << endl;
+}
+

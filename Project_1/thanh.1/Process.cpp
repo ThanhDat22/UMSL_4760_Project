@@ -30,8 +30,8 @@ void Process::launch(int iteration) {
     }
     // Child process executes the user program
     else if (pid == 0) { 
-        string interation_str = to_string(iteration);
-        cout << "User ID: " << getpid() << " executing user ... " << endl;
+        string iteration_str = to_string(iteration);
+        cout << "User (PID: " << getpid() << ") executing user ... " << endl;
         execl("./user", "./user", interation_str.c_str(), (char*)NULL); // Execute the user program
         cerr << "Error: execl failed." << endl;
         exit(1);

@@ -41,6 +41,6 @@ class Process {
     pid_t pid; // Process ID
 
     // Private member functions
-    string to_string(const int); // Convert an integer to a string
+    static string to_string(const int); // Convert an integer to a string
 };
 #endif // PROCESS_H
