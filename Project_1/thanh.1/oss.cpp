@@ -20,7 +20,14 @@ void manage_processes(int, int, int); // Launch and manage user processes
 
 // Main function
 int main(int argc, char** argv) {
-    int proc = 1, simul = 1, iter = 1; // Default values for number of user processes, maximum number of user processes to allow to run simultaneously, and number of iteration for each user process
+    int proc = -1, simul = -1, iter = -1; // Default values for command line arguments
+
+    // Check if only '-h' is provided
+    if (argc == 2 && string(argv[1]) == "-h") { 
+        print_usage();
+        return 0;
+    } 
+
     parse_arguments(argc, argv, proc, simul, iter); // Parse command line arguments
     manage_processes(proc, simul, iter); // Launch and manage user processes
     return 0;
