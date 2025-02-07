@@ -20,7 +20,7 @@ void manage_processes(int, int, int); // Launch and manage user processes
 
 // Main function
 int main(int argc, char** argv) {
-    int proc = -1, simul = -1, iter = -1; // Default values for command line arguments
+    int proc = -1, simul = -1, iter = 1; // Default values for command line arguments
 
     // Check there is no argument after ./oss
     if (argc == 1) {
