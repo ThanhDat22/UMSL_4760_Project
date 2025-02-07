@@ -7,9 +7,11 @@
 #include <iostream>
 #include <cstdlib> // For exit()
 #include <unistd.h> // For getopt()
+#include <vector> // For vector
 
 using std::cout;
 using std::endl;
+using std::vector;
 
 // Function prototypes
 void print_usage(); // Print usage information
