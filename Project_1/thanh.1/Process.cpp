@@ -32,7 +32,7 @@ void Process::launch(int iteration) {
     else if (pid == 0) { 
         string iteration_str = to_string(iteration);
         cout << "User (PID: " << getpid() << ") executing user ... " << endl;
-        execl("./user", "./user", interation_str.c_str(), (char*)NULL); // Execute the user program
+        execl("./user", "./user", iteration_str.c_str(), (char*)NULL); // Execute the user program
         cerr << "Error: execl failed." << endl;
         exit(1);
     }
