@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
     }
 
     // Check -h option present in the command line arguments
-    if (int i = 1; i < argc; i++) {
+    for (size_t i = 1; i < argc; i++) {
         if (string(argv[i]) == "-h") {
             print_usage();
             exit(0);
