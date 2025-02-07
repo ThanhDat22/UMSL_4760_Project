@@ -22,11 +22,19 @@ void manage_processes(int, int, int); // Launch and manage user processes
 int main(int argc, char** argv) {
     int proc = -1, simul = -1, iter = -1; // Default values for command line arguments
 
-    // Check if only '-h' is provided
-    if (argc == 2 && string(argv[1]) == "-h") { 
+    // Check there is no argument after ./oss
+    if (argc == 1) {
         print_usage();
-        return 0;
-    } 
+        exit(0);
+    }
+
+    // Check -h option present in the command line arguments
+    if (size_t i = 1; i < argc; i++) {
+        if (string(argv[i]) == "-h") {
+            print_usage();
+            exit(0);
+        }
+    }
 
     parse_arguments(argc, argv, proc, simul, iter); // Parse command line arguments
     manage_processes(proc, simul, iter); // Launch and manage user processes
