@@ -8,5 +8,8 @@ The project simulates an Operating System (OSS) that manages multiple user proce
 The number of process and their simultaneous execution are controlled via command line.
 
 ## Compilation
+To compile the project, use 
+```sh
+make
 
 ## Running the Project
