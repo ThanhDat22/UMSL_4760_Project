@@ -9,7 +9,8 @@ The number of process and their simultaneous execution are controlled via comman
 
 ## Compilation
 To compile the project, use 
-```sh
+``` sh
 make
+```
 
 ## Running the Project
