@@ -1,19 +1,19 @@
-# Project 1: Launching Child Process
+# **Project 1: Launching Child Process**
 
-## Description
--  The project simulates an Operating System (OSS) that manages multiple user processes:
+## **Description**
+- The project simulates an Operating System (OSS) that manages multiple user processes:
     1. Launch user processes.
     2. Executes them.
     3. Waits for them to complete.
 - The number of process and their simultaneous execution are controlled via command line.
 
-## Compilation
+## **Compilation**
 To compile the project, type in command line: 
 ```sh
 make
 ```
 
-## Running the Project
+## **Running the Project**
 
 ### Executes oss
 To executes OSS, type in command line:
@@ -113,16 +113,17 @@ User process ID 3990811 exited with status 0.
 OSS finished launching and waiting for all user processes.
 ```
 ### How the Program works:
-1. oss starts and parses command line arguments
-2. It forks up to -n user processes but limits the number running concurrently to -s
-3. Each user process executes -t iterations, printing logs before and after sleeping.
-4. oss waits for all process to finish before terminating. 
+    1. oss starts and parses command line arguments
+    2. It forks up to -n user processes but limits the number running concurrently to -s
+    3. Each user process executes -t iterations, printing logs before and after sleeping.
+    4. oss waits for all process to finish before terminating. 
 
 ### Help Option
 To display usage instruction, type in command line -h any where after ./oss:
-```sh
+```ssh
 ./oss -h
 ```
+or
 
 ```
 ./oss -n 5 -s 3 -t 7 -h
@@ -133,15 +134,19 @@ To delete compile files, type in command line:
 make clean
 ```
 
-## Special Considerations
+## **Special Considerations**
 ### What was done:
-1. Using C++ and Object-Oriented Programming in this project to take advantage in modularity, encapsulation, and scalability. The Process class abstracts process creation (fork(), exec(), and wait()), reducing code duplication, and making debugging easier.  
-2. Implemented fork(), exec(), and wait() for process management.
-3. Used getopt() to parse command line arguments.
-4. Added -h option to print a help massage and exit immediateley
-5. Handed case where user provide incomplete arguments such as missing -t.
-6. Ensured user processes execute and exit cleanly.
+    1. Using C++ and Object-Oriented Programming in this project to take advantage in modularity, encapsulation, and scalability. The Process class abstracts process creation (fork(), exec(), and wait()), reducing code duplication, and making debugging easier.  
+    2. Implemented fork(), exec(), and wait() for process management.
+    3. Used getopt() to parse command line arguments.
+    4. Added -h option to print a help massage and exit immediateley
+    5. Handed case where user provide incomplete arguments such as missing -t.
+    6. Ensured user processes execute and exit cleanly.
 
 ### Gaps:
+    - Limit testing case: the maximum of  -n and -s value is 10 due to limitation of opsys server.
+    - Output file: all output displays in standard consol; it is better if write in output file.
+    - Signal handling: oss waits for user processes; there is no handle when user process terminates unexpectedly.    
+
 
 
