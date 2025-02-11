@@ -120,7 +120,7 @@ OSS finished launching and waiting for all user processes.
 
 ### Help Option
 To display usage instruction, type in command line -h any where after ./oss:
-```ssh
+```sh
 ./oss -h
 ```
 or
