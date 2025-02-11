@@ -1,6 +1,6 @@
-#Create by Thanh Dat Nguyen on 2025-01-30
+#Created by Thanh Dat Nguyen on 2025-01-30
 
-#Last update by Thanh Dat Nguyen on 2025-02-01
+#Last updated by Thanh Dat Nguyen on 2025-02-11
 
 # Makefile for Skeleton multiple process program
 
