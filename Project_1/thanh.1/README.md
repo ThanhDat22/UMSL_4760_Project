@@ -25,7 +25,7 @@ Example:
 ./oss -n 5 -s 3 -t 7
 ```
     . -n 5: Launch 5 user processes.
-    . -n 3: Run at most 3 user processes simultaneously.
+    . -s 3: Run at most 3 user processes simultaneously.
     . -t 7: Ech user process perform 7 iterations.
 Program output example:
 ```sh
