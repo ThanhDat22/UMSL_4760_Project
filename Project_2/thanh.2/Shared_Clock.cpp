@@ -58,8 +58,9 @@ void Shared_Clock::increment_second(int seconds) {
 void Shared_Clock::increment_nano_second(int nano_seconds) {
     shared_memory_clock[1] += nano_seconds;
     if (shared_memory_clock[1] >= 1000000000) { // If nanoseconds exceed 1 second
-        shared_memory_clock[0] += 1; // Increment seconds
-        shared_memory_clock[1] -= 1000000000; // Decrement nanoseconds by 1 second
+        int extra_seconds = shared_memory_clock[1] / 1000000000; // Calculate extra seconds
+        shared_memory_clock[0] += extra_seconds; // Increment seconds
+        shared_memory_clock[1] %= 1000000000; // Update nanoseconds
     }
 }
 
