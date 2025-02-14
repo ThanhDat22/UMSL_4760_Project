@@ -19,7 +19,7 @@ void Worker::run() {
 
         if(current_seconds != last_check_seconds) {
             last_check_seconds = current_seconds; // Update last check time
-            if(should_terminate) {
+            if(should_terminate()) {
                 cout << "[Worker " << getpid() << "] terminating at " << current_seconds << " seconds " << current_nano << " nanoseconds." << endl;
                 break;
             }          
