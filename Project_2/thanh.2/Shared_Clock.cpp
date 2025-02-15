@@ -2,6 +2,8 @@
 
 // Last edited by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-02-14
 
+// shared_clock.cpp is a source file that contains the implementation of the Shared_Clock class
+
 #include "Shared_Clock.h"
 
 // Constructor:

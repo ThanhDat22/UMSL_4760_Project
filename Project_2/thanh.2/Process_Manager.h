@@ -9,6 +9,13 @@
 
 #include "Shared_Clock.h"
 
+#include <iostream>
+#include <sys/types.h>
+#include <string>
+
+using namespace std;
+
+
 const int MAX_SLOT = 20; // Maximum number of processes
 
 // Structure for the Process Control Block (PCB)

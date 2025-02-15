@@ -2,12 +2,17 @@
 
 // Last edited by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-02-14
 
+// worker.h is a header file that contains the Worker class declaration
+
 #ifndef WORKER_H
 #define WORKER_H
 
 #include "Shared_Clock.h"
 
-
+/**
+ * @brief The Worker class is used to manage the worker process.
+ * It is responsible for running the worker process and checking if it should terminate.
+ */
 class Worker {
 public:
     // Constructor:

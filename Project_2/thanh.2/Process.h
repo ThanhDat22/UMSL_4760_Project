@@ -3,6 +3,7 @@
 // Last edited by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-02-14
 
 // Process.h is a header file that contains the Process class declaration
+
 #ifndef PROCESS_H
 #define PROCESS_H
 
@@ -15,17 +16,15 @@
 #include <unistd.h> // For fork(), exec(), getpid(), getppid(), sleep()
 #include <sys/wait.h> // For waitpid()
 
-using std::cerr;
-using std::cout;
-using std::endl;
-using std::string;
-using std::ostringstream;
+using namespace std;
 
-// Process class: Represents a process that can be forked and executed by the operating system simulator (oss)
+/** @brief The Process class is used to manage the worker process.
+ * It is responsible for launching the worker process and waiting for it to finish.
+ */
 class Process {
     public:
     // Constructor
-    Process(pind_t = -1, int = 0, int = 0); // Initialize the process with a PID and termination time
+    Process(pid_t = -1, int = 0, int = 0); // Initialize the process with a PID and termination time
 
     // Getters
     pid_t get_pid() const; // Get the process ID

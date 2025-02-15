@@ -3,6 +3,8 @@
 // Last edited by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-02-14
 
 
+// shared_clock.h is a header file that contains the Shared_Clock class declaration
+
 #ifndef SHARED_CLOCK_H
 #define SHARED_CLOCK_H
 
