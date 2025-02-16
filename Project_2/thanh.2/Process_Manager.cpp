@@ -1,6 +1,6 @@
 // Created by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-02-14
 
-// Last edited by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-02-14
+// Last edited by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-02-16
 
 // Process_Manager.cpp is a source file that contains the implementation of the Process_Manager class
 
@@ -45,11 +45,11 @@ void Process_Manager::create_worker() {
     }
 
     int terminate_sec = clock.get_seconds() + (rand() % 4 + 2); // Random termination time between 2 and 5 seconds
-    int terminate_nano = clock.get_nano() + (rand() % 1000000000); // Random termination time in nanoseconds
+    int terminate_nano = clock.get_nano() + (rand() % ONE_BILLION); // Random termination time in nanoseconds
 
-    if(terminate_nano >= 1000000000) {
+    if(terminate_nano >= ONE_BILLION) {
         terminate_sec++;
-        terminate_nano -= 1000000000;
+        terminate_nano -= ONE_BILLION;
     }
 
     Process worker; // Create a new worker process

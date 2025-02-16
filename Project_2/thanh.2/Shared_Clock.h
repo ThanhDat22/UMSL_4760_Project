@@ -1,6 +1,6 @@
 // Created by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-02-14
 
-// Last edited by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-02-14
+// Last edited by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-02-16
 
 
 // shared_clock.h is a header file that contains the Shared_Clock class declaration
@@ -26,6 +26,7 @@ using std::cerr;
 using std::endl;
 
 const key_t SHARED_CLOCK_KEY = 2031974; // Key for the shared memory segment
+const int ONE_BILLION = 1000000000; // One billion for nanoseconds
 
 class Shared_Clock {
 

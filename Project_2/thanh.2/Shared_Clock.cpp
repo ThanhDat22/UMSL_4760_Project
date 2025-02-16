@@ -1,6 +1,6 @@
 // Created by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-02-14
 
-// Last edited by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-02-14
+// Last edited by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-02-16
 
 // shared_clock.cpp is a source file that contains the implementation of the Shared_Clock class
 
@@ -59,10 +59,10 @@ void Shared_Clock::increment_second(int seconds) {
  */
 void Shared_Clock::increment_nano_second(int nano_seconds) {
     shared_memory_clock[1] += nano_seconds;
-    if (shared_memory_clock[1] >= 1000000000) { // If nanoseconds exceed 1 second
-        int extra_seconds = shared_memory_clock[1] / 1000000000; // Calculate extra seconds
+    if (shared_memory_clock[1] >= ONE_BILLION) { // If nanoseconds exceed 1 second
+        int extra_seconds = shared_memory_clock[1] / ONE_BILLION; // Calculate extra seconds
         shared_memory_clock[0] += extra_seconds; // Increment seconds
-        shared_memory_clock[1] %= 1000000000; // Update nanoseconds
+        shared_memory_clock[1] %= ONE_BILLION; // Update nanoseconds
     }
 }
 
