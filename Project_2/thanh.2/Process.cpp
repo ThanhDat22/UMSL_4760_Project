@@ -20,7 +20,7 @@ void Process::set_pid(pid_t pid) { this->pid = pid; }
 /*  Fork and execute the process
     * @param iteration: The number of iterations for the user process
 */
-void Process::launch(int iteration) {
+void Process::launch(int interminate_seconds, int terminate_nano_seconds) {
     pid = fork(); // Fork the process
 
     // Fork failed

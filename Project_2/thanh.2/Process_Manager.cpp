@@ -35,7 +35,7 @@ void Process_Manager::store_worker_data(int slot, Process &worker) {
 }
 
 // Creates a worker process and stores its data in the process table.
-void Process_Manager::create_worker() {
+void Process_Manager::create_worker(int time_limit) {
     int slot = find_empty_slot(); 
     
     // Check if there is an empty slot in the process table
@@ -44,13 +44,8 @@ void Process_Manager::create_worker() {
         return;
     }
 
-    int terminate_sec = clock.get_seconds() + (rand() % 4 + 2); // Random termination time between 2 and 5 seconds
-    int terminate_nano = clock.get_nano() + (rand() % ONE_BILLION); // Random termination time in nanoseconds
-
-    if(terminate_nano >= ONE_BILLION) {
-        terminate_sec++;
-        terminate_nano -= ONE_BILLION;
-    }
+    int terminate_sec = rand() % time_limit; // Random seconds from 0 to time_limit
+    int terminate_nano = rand() % ONE_BILLION; // Random nanoseconds from 0 to 1 billion - 1
 
     Process worker; // Create a new worker process
     worker.launch(terminate_sec, terminate_nano); // Launch the worker process with the termination time

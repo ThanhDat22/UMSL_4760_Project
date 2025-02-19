@@ -8,10 +8,14 @@
 #define PROCESS_MANAGER_H
 
 #include "Shared_Clock.h"
+#include "Process.h"
 
 #include <iostream>
 #include <sys/types.h>
 #include <string>
+#include <unistd.h> 
+#include <sys/wait.h>
+#include <cstdlib> // For rand()
 
 using namespace std;
 
@@ -38,7 +42,7 @@ public:
     Process_Manager(Shared_Clock &); // Initialize the process manager with a reference to the shared clock
 
     // Member functions
-    void create_worker(); // Create a worker process
+    void create_worker(int); // Create a worker process
     void check_terminated_worker(); // Check for terminated worker processes
     void terminate_process(int); // Terminate a process
     void terminate_all(); // Terminate all processes
