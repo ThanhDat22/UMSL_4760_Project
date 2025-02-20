@@ -29,21 +29,18 @@ Worker::~Worker() {
 
 // Class member functions:
 void Worker::run() {
-    int last_check_seconds = -1;
+    int last_check_seconds = start_seconds; // Track the last check time
 
     while(true) {
         int current_seconds = clock->get_second();
         int current_nano = clock->get_nano_second();
 
-        int elapsed_time = current_seconds - start_seconds;
-
         // Print periodic message when seconds increase
-        if(current_seconds != last_check_seconds) {
-            last_check_seconds = current_seconds; // Update last check time
+        if (current_seconds > last_check_seconds) {
             cout << "[Worker " << getpid() << "] SysClockS: " << current_seconds
                  << " SysClockNano: " << current_nano
-                 << " -- " << (elapsed_time) << " seconds have passed since starting"
-                 << endl;          
+                 << " -- " << (current_seconds - start_seconds) << " seconds have passed since starting" << endl;
+            last_check_seconds = current_seconds;
         }
 
         // Terminate the worker when termination time is reached
