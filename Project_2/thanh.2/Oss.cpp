@@ -63,6 +63,7 @@ int main(int argc, char** argv) {
             }
 
             if(workers_launched >= num_workers && count_running_workers() == 0) {
+                cout << "OSS: All workers finished. Exiting..." << endl;
                 break;
             }
 
