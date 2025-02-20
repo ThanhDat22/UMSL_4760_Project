@@ -34,7 +34,7 @@ $(WORKER_EXECUTABLE): $(WORKER_OBJ)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 run:
-	./oss -5 -s 3 -t 7 -i 100
+	./oss -n 5 -s 3 -t 7 -i 100
 
 # Clean up
 clean:
