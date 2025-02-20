@@ -8,6 +8,10 @@
 
 // Constructor:
 Worker::Worker(int seconds, int nano) : terminate_seconds(seconds), terminate_nano(nano) {
+    clock = Shared_Clock(); // Initialize the shared clock
+    start_seconds = clock.get_second(); // Get the start time in seconds
+    start_nano = clock.get_nano_second(); // Get the start time in nanoseconds
+    
     cout << "[Worker " << getpid() << "] Just Starting" << endl;
     cout << "[Worker " << getpid() << "] PPID: " << getppid()
          << " SysClockS: " << clock.get_second()
