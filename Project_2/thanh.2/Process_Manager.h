@@ -1,6 +1,6 @@
 // Created by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-02-14
 
-// Last edited by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-02-16
+// Last edited by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-02-19
 
 // Process_Manager.h is a header file that contains the Process_Manager class declaration
 
@@ -44,9 +44,8 @@ public:
     // Member functions
     void create_worker(int); // Create a worker process
     void check_terminated_worker(); // Check for terminated worker processes
-    void terminate_process(int); // Terminate a process
-    void terminate_all(); // Terminate all processes
     void print_process_table(); // Print the process table
+    int get_active_workers(); // Get the number of active workers
 
 private:
     // Data fields:

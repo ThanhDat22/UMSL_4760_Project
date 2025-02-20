@@ -38,7 +38,6 @@ private:
     void manage_workers(); // Manage the worker processes
     void update_clock(); // Update the shared clock
     void print_usage(); // Print the usage of the program
-    void parse_arguments(int, char**); // Parse the command line arguments
 
 
 }

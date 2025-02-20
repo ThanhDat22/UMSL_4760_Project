@@ -1,6 +1,6 @@
 // Created by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-02-14
 
-// Last edited by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-02-16
+// Last edited by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-02-19
 
 // Process_Manager.cpp is a source file that contains the implementation of the Process_Manager class
 
@@ -82,48 +82,15 @@ void Process_Manager::print_process_table() {
     cout << string(30, '-') << endl;
 }
 
-/** @brief Terminates a process with the given PID.
- *  @param pid The PID of the process to terminate.
- */
-void Process_Manager::terminate_process(int pid) {
-    // Check if the process is in the process table
-    bool found = false;
 
-    for (size_t i = 0; i < MAX_SLOT; i++) {
-        if (process_table[i].occupied && process_table[i].pid == pid) { // Find the process in the process table
-            found = true; // Mark the process as found
-            kill(pid, SIGTERM); // Send termination signal to the process
-            int status; // Status of the terminated process
-            waitpid(pid, &status, 0); // Wait for the process to terminate
-            cout << "Process Worker PID" << pid << " terminated." << endl;
-            process_table[i].occupied = 0; // Mark the slot as free
-            process_table[i].pid = -1; // Reset the PID
-            break;
-        }
-    }
-    if (!found) {
-        cout << "Process Worker PID" << pid << " not found." << endl;
-    }
-    
-}
-
-// Terminates all processes in the process table.
-void Process_Manager::terminate_all() {
-    bool found = false; // Check if any worker is found
+int Process_Manager::get_active_workers() {
+    int count = 0; // Count of active workers
 
     for (size_t i = 0; i < MAX_SLOT; i++) {
         if (process_table[i].occupied) { // Check if the slot is occupied
-            found = true; // Mark the process as found
-            kill(process_table[i].pid, SIGTERM); // Terminate the process
-            int status; // Status of the terminated process
-            waitpid(process_table[i].pid, &status, 0); // Wait for the process to terminate
-            cout << "Process Worker PID" << process_table[i].pid << " terminated." << endl;
-            process_table[i].occupied = 0; // Mark the slot as free
-            process_table[i].pid = -1; // Reset the PID
+            count++; // Increment the count
         }
     }
-    if (!found) {
-        cout << "No active worker found." << endl;
-    }
+    return count; // Return the count
 }
 

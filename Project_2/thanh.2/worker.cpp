@@ -1,6 +1,6 @@
 // Created by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-02-13
 
-// Last edited by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-02-14
+// Last edited by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-02-19
 
 // worker.cpp is a source file that contains the implementation of the Worker class
 #include "Worker.h"
@@ -20,7 +20,7 @@ void Worker::run() {
 
         if(current_seconds != last_check_seconds) {
             last_check_seconds = current_seconds; // Update last check time
-            if(check_terminate()) {
+            if(check_termination()) {
                 cout << "[Worker " << getpid() << "] terminating at " << current_seconds << " seconds " << current_nano << " nanoseconds." << endl;
                 break;
             }          

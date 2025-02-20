@@ -30,7 +30,7 @@ void Oss::run() {
 void Oss::wait_for_workers() {
     cout << "OSS: Waiting for all workers to finish..." << endl;
 
-    while (!process_manager.all_workers_terminate.()) {
+    while (!process_manager.all_workers_terminated()) {
         update_clock();
     }
 
@@ -41,7 +41,7 @@ void Oss::wait_for_workers() {
 
 void Oss::update_clock() {
     for (size_t i = 0; i < 5; i++ ) {
-        clock.increment_nano_second(1000000 * i); // Update time by 100ms
+        clock.increment_nano_second(ONE_BILLION / 10); // Update time by 100ms
         process_manager.check_terminated_worker();
         process_manager.print_process_table();
     }
@@ -51,17 +51,16 @@ void Oss::manage_workers() {
     cout << "OSS: Managing workers..." << endl;
 
     int created_workers = 0;
-    int last_launch_sec = clock.get_seconds();
-    int last_launch_nano = clock.get_nanoseconds();
+    int last_launch_sec = clock.get_second();
+    int last_launch_nano = clock.get_nanosecond();
 
     while(created_workers < num_processes) {
-        int current_sec = clock.get_seconds();
-        int current_nano = clock.get_nanoseconds();
+        int current_sec = clock.get_second();
+        int current_nano = clock.get_nanosecond();
 
         int interval_nano = interval_in_ms * 1000000; // Convert milliseconds to nanoseconds
 
-        bool time_to_launch = (current_sec > last_launch_sec) || 
-            (current_sec == last_launch_sec && current_nano - last_launch_nano >= interval_nano);
+        bool time_to_launch = (current_sec * ONE_BILLION + current_nano) - (last_launch_sec * ONE_BILLION + last_launch_nano) >= interval_nano;
 
         if(process_manager.get_active_workers() < max_simultaneous && time_to_launch) {
             process_manager.create_worker(time_limit);
