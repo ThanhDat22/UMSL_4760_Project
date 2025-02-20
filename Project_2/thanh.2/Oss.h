@@ -1,6 +1,6 @@
 // Created by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-02-13
 
-// Last edited by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-02-16
+// Last edited by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-02-19
 
 // oss.h is a header file that contains the Oss class declaration
 
@@ -31,6 +31,12 @@ private:
     int time_limit; // Time limit for the worker processes (-t flag)
     Shared_Clock clock; // Shared memory clock
     Process_Manager process_manager; // Process manager to manage the worker processes
+    void parse_arguments(int, char**); // Parse the command line arguments
+
+    // Private member functions:
+    void manage_workers(); // Manage the worker processes
+    void update_clock(); // Update the shared clock
+    void print_usage(); // Print the usage of the program
 
 }
 
