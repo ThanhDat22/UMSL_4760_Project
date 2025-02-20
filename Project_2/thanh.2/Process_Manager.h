@@ -1,6 +1,6 @@
 // Created by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-02-14
 
-// Last edited by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-02-19
+// Last edited by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-02-20
 
 // Process_Manager.h is a header file that contains the Process_Manager class declaration
 
@@ -9,6 +9,7 @@
 
 #include "Shared_Clock.h"
 #include "Process.h"
+#include "worker.h"
 
 #include <iostream>
 #include <sys/types.h>
