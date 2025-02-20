@@ -17,7 +17,7 @@
 class Oss {
 public:
     // Constructor:
-    Oss(int = 0, int = 0, int = 0); // The default constructor
+    Oss(int = 0, int = 0, int = 0, int = 0); // The default constructor
 
     // Class member functions:
     void run(); // Run the OSS execution
