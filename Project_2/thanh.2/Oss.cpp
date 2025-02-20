@@ -52,11 +52,11 @@ void Oss::manage_workers() {
 
     int created_workers = 0;
     int last_launch_sec = clock.get_second();
-    int last_launch_nano = clock.get_nanosecond();
+    int last_launch_nano = clock.get_nano_second();
 
     while(created_workers < num_processes) {
         int current_sec = clock.get_second();
-        int current_nano = clock.get_nanosecond();
+        int current_nano = clock.get_nano_second();
 
         int interval_nano = interval_in_ms * 1000000; // Convert milliseconds to nanoseconds
 

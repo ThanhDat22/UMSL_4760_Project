@@ -46,6 +46,7 @@ public:
     void check_terminated_worker(); // Check for terminated worker processes
     void print_process_table(); // Print the process table
     int get_active_workers(); // Get the number of active workers
+    bool all_workers_terminated(); // Check if all workers have terminated
 
 private:
     // Data fields:

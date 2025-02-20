@@ -94,3 +94,15 @@ int Process_Manager::get_active_workers() {
     return count; // Return the count
 }
 
+/** @brief Checks if all workers have terminated.
+ *  @return true if all workers have terminated, false otherwise
+ */
+bool Process_Manager::all_workers_terminated() {
+    for (size_t i = 0; i < MAX_SLOT; i++) {
+        if (process_table[i].occupied) { // Check if the slot is occupied
+            return false; // At least one worker is still running
+        }
+    }
+    return true; // All workers have terminated
+}
+
