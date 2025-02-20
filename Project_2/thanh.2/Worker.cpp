@@ -29,12 +29,14 @@ void Worker::run() {
         int current_seconds = clock.get_second();
         int current_nano = clock.get_nano_second();
 
+        int elapsed_time = current_seconds - start_seconds;
+
         // Print periodic message when seconds increase
         if(current_seconds != last_check_seconds) {
             last_check_seconds = current_seconds; // Update last check time
             cout << "[Worker " << getpid() << "] SysClockS: " << current_seconds
                  << " SysClockNano: " << current_nano
-                 << " -- " << (current_seconds - terminate_seconds) << " seconds have passed since starting"
+                 << " -- " << (elapsed_time) << " seconds have passed since starting"
                  << endl;          
         }
 
