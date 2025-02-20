@@ -7,8 +7,6 @@
 #ifndef PROCESS_H
 #define PROCESS_H
 
-#include "Shared_Clock.h" // For Shared_Clock class
-
 #include <sys/types.h> // For pid_t
 #include <iostream> // For cerr
 #include <string> // For string
@@ -24,24 +22,24 @@ using namespace std;
 class Process {
     public:
     // Constructor
-    Process(pid_t = -1, int = 0, int = 0); // Initialize the process with a PID and termination time
+    Process(pid_t = 0, int = 0, int = 0); // The default constructor
 
     // Getters
     pid_t get_pid() const; // Get the process ID
-
-    // Setters
-    void set_pid(pid_t); // Set the process ID
+    int get_start_seconds() const; // Get the start time in seconds
+    int get_start_nano() const; // Get the start time in nanoseconds
 
     // Member functions
-    void launch(int, int); // Fork and execute the process
+    void launch(int); // Fork and execute the process
     void wait_for_completion(); // Wait for the child process to finish
+    bool is_running() const; // Check if the process is running
 
 
     private:
     // Data fields
     pid_t pid; // Process ID
-    int terminate_seconds; // Termination time in seconds
-    int terminate_nano_seconds; // Termination time in nanoseconds
+    int start_seconds; // start time in seconds
+    int start_nano; // start time in nanoseconds
 
     // Private member functions
     static string to_string(const int); // Convert an integer to a string

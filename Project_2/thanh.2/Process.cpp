@@ -7,20 +7,19 @@
 #include "Process.h"
 
 // Constructor
-Process::Process(pid_t pid, int terminate_seconds, int terminate_nano_seconds) : pid(pid), terminate_seconds(terminate_seconds), terminate_nano_seconds(terminate_nano_seconds) { }
+Process::Process(pid_t pid, int start_seconds, int start_nano) : pid(pid), start_seconds(start_seconds), start_nano(start_nano) { }
 
 // Getters
 pid_t Process::get_pid() const { return pid; }
-
-// Setters
-void Process::set_pid(pid_t pid) { this->pid = pid; }
+int Process::get_start_seconds() const { return start_seconds; }
+int Process::get_start_nano() const { return start_nano; }
 
 // Member functions
 
 /*  Fork and execute the process
     * @param iteration: The number of iterations for the user process
 */
-void Process::launch(int interminate_seconds, int terminate_nano_seconds) {
+void Process::launch(int process_id) {
     pid = fork(); // Fork the process
 
     // Fork failed
@@ -29,14 +28,12 @@ void Process::launch(int interminate_seconds, int terminate_nano_seconds) {
         exit(1);
     }
     // Child process executes the user program
-    else if (pid == 0) { 
-        string sec_str = to_string(terminate_seconds); // Convert termination time to string
-        string nano_str = to_string(terminate_nano_seconds); // Convert termination time to string
-
-        cout << "WORKER (PID: " << getpid() << ") executing worker process ... " << endl;
-        execl("./worker", "./worker", sec_str.c_str(), nano_str.c_str(), (char*)NULL); // Execute the worker program
-        cerr << "Error: execl failed." << endl;
+    else if (pid == 0) { // Child process
+        execl("./worker", "./worker", to_string(start_seconds).c_str(), to_string(start_nano).c_str(), NULL);
+        cerr << "Error: Exec failed." << endl;
         exit(1);
+    } else if (pid > 0) { // Parent process
+        cout << "Process ID: " << pid << " has been created." << endl;
     }
 }
 
@@ -50,6 +47,20 @@ void Process::wait_for_completion() {
         } else {
             cerr << "User process ID " << pid << " exited abnormally." << endl;
         }
+    }
+}
+
+// Check if the process is running
+bool Process::is_running() const {
+    if (pid <= 0) {
+        return false; // Process is not running
+    }
+
+    // Send signal 0 to check if the process is running
+    if (kill(pid, 0) == 0) {
+        return true; // Process is running
+    } else {
+        return false; // Process is not running
     }
 }
 
