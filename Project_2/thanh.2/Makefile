@@ -11,7 +11,7 @@ OSS_EXECUTABLE = oss
 WORKER_EXECUTABLE = worker
 
 # Source files
-OSS_SRC = Oss.cpp Process.cpp Process_Manager.cpp Shared_Clock.cpp main.cpp
+OSS_SRC = Oss.cpp Process.cpp Process_Manager.cpp Shared_Clock.cpp main.cpp Worker.cpp
 WORKER_SRC = Worker.cpp Shared_Clock.cpp
 
 # Object files
@@ -33,7 +33,7 @@ $(WORKER_EXECUTABLE): $(WORKER_OBJ)
 	$(CXX) $(CXXFLAGS) -o $(WORKER_EXECUTABLE) $(WORKER_OBJ)
 
 # Compile each .cpp file to .o
-%.o: %.cpp $(HEADERS)
+%.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Clean up
