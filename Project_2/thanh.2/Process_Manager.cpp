@@ -30,8 +30,8 @@ int Process_Manager::find_empty_slot() {
 void Process_Manager::store_worker_data(int slot, Process &worker) {
     process_table[slot].occupied = 1; // Mark the slot as occupied
     process_table[slot].pid = worker.get_pid(); // Store the PID of the worker process
-    process_table[slot].start_seconds = clock.get_seconds(); // Store the start time in seconds
-    process_table[slot].start_nano = clock.get_nano(); // Store the start time in nanoseconds
+    process_table[slot].start_seconds = clock.get_second(); // Store the start time in seconds
+    process_table[slot].start_nano = clock.get_nano_second(); // Store the start time in nanoseconds
 }
 
 // Creates a worker process and stores its data in the process table.
@@ -72,7 +72,7 @@ void Process_Manager::check_terminated_worker() {
 
 // Prints the process table.
 void Process_Manager::print_process_table() {
-    cout << "\nOSS PID: " << getpid() << " SysClockS: " << clock.get_seconds() << " SysClockNS: " << clock.get_nano() << endl;
+    cout << "\nOSS PID: " << getpid() << " SysClockS: " << clock.get_second() << " SysClockNS: " << clock.get_nano_second() << endl;
     cout << "Process Table:" << endl;
     cout << "Entry \t\t| Occupied \t\t| PID StartS \t\t| StartN" << endl;
 
