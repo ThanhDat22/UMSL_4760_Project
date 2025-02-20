@@ -7,6 +7,8 @@
 #include "Oss.h"
 #include "worker.h"
 
+#include <string.h>
+
 int main(int argc, char** argv) {
 
     // Check if the program is running as worker
