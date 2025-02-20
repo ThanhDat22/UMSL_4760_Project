@@ -1,6 +1,6 @@
 # Created by Thanh Dat Nguyen on 2025-02-11
 
-# Last updated by Thanh Dat Nguyen on 2025-02-019
+# Last updated by Thanh Dat Nguyen on 2025-02-20
 
 # Compiler
 CXX = g++ -g3  # Use g++ for C++ files
@@ -11,8 +11,8 @@ OSS_EXECUTABLE = oss
 WORKER_EXECUTABLE = worker
 
 # Source files
-OSS_SRC = Oss.cpp Process.cpp Process_Manager.cpp Shared_Clock.cpp main.cpp
-WORKER_SRC = Worker.cpp Shared_Clock.cpp main.cpp
+OSS_SRC = Oss.cpp Process.cpp Process_Manager.cpp Shared_Clock.cpp Worker.cpp main.cpp
+WORKER_SRC = Worker.cpp Shared_Clock.cpp
 
 # Object files
 OSS_OBJ = $(OSS_SRC:.cpp=.o)
