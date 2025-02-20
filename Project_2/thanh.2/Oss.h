@@ -29,14 +29,17 @@ private:
     int num_processes; // Total number of worker processes to create
     int max_simultaneous; // Maximum number of worker processes that can run simultaneously
     int time_limit; // Time limit for the worker processes (-t flag)
+    int interval_in_ms; // Interval in milliseconds for the OSS to check the worker processes (-i flag)
+
     Shared_Clock clock; // Shared memory clock
     Process_Manager process_manager; // Process manager to manage the worker processes
-    void parse_arguments(int, char**); // Parse the command line arguments
-
+    
     // Private member functions:
     void manage_workers(); // Manage the worker processes
     void update_clock(); // Update the shared clock
     void print_usage(); // Print the usage of the program
+    void parse_arguments(int, char**); // Parse the command line arguments
+
 
 }
 
