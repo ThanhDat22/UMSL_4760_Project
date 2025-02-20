@@ -15,14 +15,14 @@ using namespace std;
 void print_usage(); // Print usage information
 void starting_message(int, int, int, int); // Print starting message
 void parse_arguments(int, char**, int&, int&); // Parse command line arguments
-void compute_termination_time(Clock*, int, int, int&, int& int&, int&); // Compute termination time
+void compute_termination_time(Clock*, int, int, int&, int&, int&, int&); // Compute termination time
 void run_worker(Clock*, int, int, int, int); // Run worker process
 
 // Main function
 int main(int argc, char** argv) {
 
     if (argc < 3) {
-        printUsage(argv[0]);
+        print_usage(argv[0]);
         return 1;
     }
 
@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
     compute_termination_time(clock, max_seconds, max_nanoseconds, termination_seconds, termination_nanoseconds);
 
     // Print starting message
-    starting_message(clock, max_seconds, max_nanoseconds, start_seconds, start_nanoseconds, termination_seconds, termination_nanoseconds);
+    starting_message(max_seconds, max_nanoseconds, start_seconds, start_nanoseconds, termination_seconds, termination_nanoseconds);
 
     // Run the busy-waiting loop
     run_worker(clock, start_seconds, start_nanoseconds, termination_seconds, termination_nanoseconds);
@@ -128,7 +128,7 @@ void run_worker(Clock* clock, int start_seconds, int start_nanoseconds, int term
                  << " SysclockNano:" << current_nanoseconds
                  << " TermTimeS:" << terminate_seconds
                  << " TermTimeNano:" << terminate_nanoseconds
-                 << "\n--" << (curSec - startSec)
+                 << "\n--" << (current_seconds - start_seconds)
                  << " seconds have passed since starting" << endl;
             
             last_seconds = current_seconds;
