@@ -36,6 +36,9 @@ $(WORKER_EXECUTABLE): $(WORKER_OBJ)
 %.o: %.cpp $(HEADERS)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+Worker.o: Worker.cpp Worker.Header
+	$(CXX) $(CXXFLAGS) -c Worker.cpp -o Worker.o
+
 # Clean up
 clean:
 	rm -f $(OSS_OBJ) $(WORKER_OBJ) $(OSS_EXECUTABLE) $(WORKER_EXECUTABLE) *.o *.exe
