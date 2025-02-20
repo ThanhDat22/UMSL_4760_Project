@@ -11,11 +11,11 @@ OSS_EXECUTABLE = oss
 WORKER_EXECUTABLE = worker
 
 # Source files
-OSS_SRC = Oss.cpp Process.cpp Process_Manager.cpp Shared_Clock.cpp main.cpp Worker.cpp
+OSS_SRC = Oss.cpp Process.cpp Process_Manager.cpp Shared_Clock.cpp main.cpp
 WORKER_SRC = Worker.cpp Shared_Clock.cpp
 
 # Object files
-OSS_OBJ = $(OSS_SRC:.cpp=.o)
+OSS_OBJ = $(OSS_SRC:.cpp=.o) Worker.o
 WORKER_OBJ = $(WORKER_SRC:.cpp=.o)
 
 # Header files
