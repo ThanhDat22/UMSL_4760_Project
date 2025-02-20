@@ -32,8 +32,8 @@ void Worker::run() {
     int last_check_seconds = -1;
 
     while(true) {
-        int current_seconds = clock.get_second();
-        int current_nano = clock.get_nano_second();
+        int current_seconds = clock->get_second();
+        int current_nano = clock->get_nano_second();
 
         int elapsed_time = current_seconds - start_seconds;
 
@@ -58,8 +58,8 @@ void Worker::run() {
 
 // Check if the worker should terminate
 bool Worker::check_termination() {
-    int current_seconds = clock.get_second();
-    int current_nano = clock.get_nano_second();
+    int current_seconds = clock->get_second();
+    int current_nano = clock->get_nano_second();
 
     // Check if termination time has been reached
     if(current_seconds > terminate_seconds || 
