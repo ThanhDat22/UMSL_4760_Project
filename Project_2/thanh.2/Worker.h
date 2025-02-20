@@ -9,6 +9,8 @@
 
 #include "Shared_Clock.h"
 
+using namespace std;
+
 /**
  * @brief The Worker class is used to manage the worker process.
  * It is responsible for running the worker process and checking if it should terminate.
