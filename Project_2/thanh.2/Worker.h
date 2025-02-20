@@ -29,6 +29,9 @@ private:
     // Data fields:
     Shared_Clock clock;
 
+    int start_seconds; // The seconds to start the worker
+    int start_nano; // The nanoseconds to start the worker
+
     int terminate_seconds; // The seconds to terminate the worker
     int terminate_nano; // The nanoseconds to terminate the worker
 
