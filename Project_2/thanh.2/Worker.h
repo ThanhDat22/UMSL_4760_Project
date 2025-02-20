@@ -21,13 +21,14 @@ class Worker {
 public:
     // Constructor:
     Worker(int = 0, int = 0); // The default constructor
+    ~Worker(); // The destructor
 
     // Class member functions:
     void run(); // Run the worker
 
 private:
     // Data fields:
-    Shared_Clock clock;
+    Shared_Clock* clock;
 
     int start_seconds; // The seconds to start the worker
     int start_nano; // The nanoseconds to start the worker
