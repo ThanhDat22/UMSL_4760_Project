@@ -19,7 +19,7 @@ int Process::get_start_nano() const { return start_nano; }
 /*  Fork and execute the process
     * @param iteration: The number of iterations for the user process
 */
-void Process::launch(int process_id) {
+void Process::launch(int seconds, int nano) {
     pid = fork(); // Fork the process
 
     // Fork failed
@@ -29,7 +29,7 @@ void Process::launch(int process_id) {
     }
     // Child process executes the user program
     else if (pid == 0) { // Child process
-        execl("./worker", "./worker", to_string(start_seconds).c_str(), to_string(start_nano).c_str(), NULL);
+        execl("./worker", "./worker", to_string(seconds).c_str(), to_string(nano).c_str(), NULL);
         cerr << "Error: Exec failed." << endl;
         exit(1);
     } else if (pid > 0) { // Parent process

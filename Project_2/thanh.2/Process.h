@@ -30,7 +30,7 @@ class Process {
     int get_start_nano() const; // Get the start time in nanoseconds
 
     // Member functions
-    void launch(int); // Fork and execute the process
+    void launch(int, int); // Fork and execute the process
     void wait_for_completion(); // Wait for the child process to finish
     bool is_running() const; // Check if the process is running
 
