@@ -22,7 +22,7 @@ void run_worker(Clock*, int, int, int, int); // Run worker process
 int main(int argc, char** argv) {
 
     if (argc < 3) {
-        print_usage(argv[0]);
+        print_usage();
         return 1;
     }
 
@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
     }
 
     int start_seconds, start_nanoseconds, termination_seconds, termination_nanoseconds;
-    compute_termination_time(clock, max_seconds, max_nanoseconds, termination_seconds, termination_nanoseconds);
+    compute_termination_time(clock, max_seconds, max_nanoseconds, start_seconds, start_nanoseconds, termination_seconds, termination_nanoseconds);
 
     // Print starting message
     starting_message(max_seconds, max_nanoseconds, start_seconds, start_nanoseconds, termination_seconds, termination_nanoseconds);
