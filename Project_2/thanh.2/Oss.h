@@ -8,6 +8,19 @@
 
 #include "Shared_Clock.h"
 
+#include <csignal>       // For signal(), SIGALRM, SIGTERM
+#include <sys/time.h>    // For setitimer()
+#include <unistd.h>      // For fork(), execlp(), getpid(), alarm()
+#include <sys/types.h>   // For pid_t
+#include <sys/wait.h>    // For waitpid()
+#include <cstdlib>       // For exit(), atoi()
+#include <iostream>      // For std::cout, std::cerr
+#include <sstream>       // For std::ostringstream
+#include <getopt.h>      // For getopt()
+
+extern volatile sig_atomic_t timeout_flag;
+extern volatile sig_atomic_t timer_tick;
+
 //Function prototypes
 void signal_handler(int); // Signal handler
 void print_usage(); // Print usage information
@@ -16,7 +29,7 @@ void print_process_table(Clock*); // Print the process table
 void increment_clock(Clock*, int); // Increment the clock
 void check_terminated_workers(); // Check for terminated workers
 int count_running_workers(); // Count the number of running workers
-string to_string(const int); // Convert an integer to a string
+//string to_string(const int); // Convert an integer to a string
 bool launch_worker(Clock*, int); // Launch a worker process
 void parse_arguments(int, char**, int&, int&, int&, int&); // Parse command line arguments
 void setup_timer(int); // Setup the timer

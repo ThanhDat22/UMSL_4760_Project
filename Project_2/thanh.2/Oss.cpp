@@ -105,7 +105,7 @@ void setup_timer(int interval_ms) {
     struct itimerval timer;
     timer.it_interval.tv_sec = interval_ms / 1000;
     timer.it_interval.tv_usec = (interval_ms % 1000) * 1000;
-    timer.it_value = timer.it_interval; // Start immediately
+    timer.it_value = timer.it_interval;
     setitimer(ITIMER_REAL, &timer, NULL);
 }
 
@@ -259,11 +259,11 @@ int count_running_workers() {
  *  @param num The integer to convert.
  *  @return The string representation of the integer.
  */
-string to_string(const int num) {
-    ostringstream oss;
-    oss << num;
-    return oss.str();
-}
+// string to_string(const int num) {
+//     ostringstream oss;
+//     oss << num;
+//     return oss.str();
+// }
 
 /** @brief Launches a worker process.
  *  @param clock Pointer to the shared clock structure.
@@ -271,6 +271,8 @@ string to_string(const int num) {
  *  @return True if the worker was launched successfully, false otherwise.
  */
 bool launch_worker(Clock* clock, int time_upper_bound) {
+
+
     // Find a free slot in the process table.
     int slot = -1;
     for (int i = 0; i < MAX_PCB; i++) {
@@ -306,7 +308,7 @@ bool launch_worker(Clock* clock, int time_upper_bound) {
         pcb[slot].start_seconds = clock->seconds;
         pcb[slot].start_nanoseconds = clock->nanoseconds;
         cout << "OSS: Launched worker PID " << pid << " in slot " << slot 
-             << " (Runtime: " << child_seconds << " sec, " << child_nanoseconds << " ns)" << endl;
+             << " (Runtime: " << worker_seconds << " sec, " << worker_nanoseconds << " ns)" << endl;
         return true;
     }
 }
