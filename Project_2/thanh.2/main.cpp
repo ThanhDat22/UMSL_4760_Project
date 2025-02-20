@@ -5,7 +5,7 @@
 // main.cpp is a source file that contains the main program
 
 #include "Oss.h"
-#include "worker.h"
+#include "Worker.h"
 
 #include <string.h>
 

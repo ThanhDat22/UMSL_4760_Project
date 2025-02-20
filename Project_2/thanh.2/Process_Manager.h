@@ -9,7 +9,7 @@
 
 #include "Shared_Clock.h"
 #include "Process.h"
-#include "worker.h"
+#include "Worker.h"
 
 #include <iostream>
 #include <sys/types.h>

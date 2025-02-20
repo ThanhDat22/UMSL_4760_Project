@@ -9,7 +9,7 @@
 
 #include "Process_Manager.h"
 #include "Shared_Clock.h"
-#include "worker.h"
+#include "Worker.h"
 
 /**
  * @brief The Oss class is used to manage the operating system simulation.
