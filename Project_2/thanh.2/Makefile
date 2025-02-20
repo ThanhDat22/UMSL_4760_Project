@@ -33,7 +33,7 @@ $(WORKER_EXECUTABLE): $(WORKER_OBJ)
 	$(CXX) $(CXXFLAGS) -o $(WORKER_EXECUTABLE) $(WORKER_OBJ)
 
 # Compile each .cpp file to .o
-%.o: %.cpp
+%.o: %.cpp $(HEADERS)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Clean up
