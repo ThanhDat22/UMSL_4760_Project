@@ -1,6 +1,6 @@
 // Created by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-02-13
 
-// Last edited by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-02-119
+// Last edited by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-02-20
 
 // worker.h is a header file that contains the Worker class declaration
 
@@ -8,6 +8,8 @@
 #define WORKER_H
 
 #include "Shared_Clock.h"
+
+#include <unistd.h> // For getpid(), getppid()
 
 using namespace std;
 
