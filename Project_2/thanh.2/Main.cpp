@@ -5,23 +5,32 @@
 using namespace std;
 
 int main() {
-    cout << "Starting process test...\n";
+    std::cout << "Starting Process Test..." << std::endl;
 
-    // Create a process that should terminate in 5 seconds and 500000 nanoseconds
-    Process p1;
-    p1.launch(5, 500000);
+    // Create a Process object
+    Process process;
 
-    cout << "Process launched with PID: " << p1.get_pid() << endl;
-
-    // Check if process is running
-    while (p1.is_running()) {
-        cout << "Process " << p1.get_pid() << " is still running...\n";
-        sleep(1);
+    // Fork a child process
+    if (process.launch(5, 500000)) {
+        std::cout << "Child process started with PID: " << process.get_pid() << std::endl;
+    } else {
+        std::cerr << "Failed to launch child process." << std::endl;
+        return 1;  // Exit with error
     }
 
-    // Wait for the process to finish
-    p1.wait_for_completion();
-    
-    cout << "Process test complete.\n";
+    // Wait a few seconds to simulate work
+    sleep(3);
+
+    // Check if the process is still running
+    if (process.is_running()) {
+        std::cout << "Process " << process.get_pid() << " is still running..." << std::endl;
+    } else {
+        std::cout << "Process " << process.get_pid() << " has already terminated." << std::endl;
+    }
+
+    // Wait for process to finish
+    process.wait_for_completion();
+    std::cout << "Process test completed." << std::endl;
+
     return 0;
 }
