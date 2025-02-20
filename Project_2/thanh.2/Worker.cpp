@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
     compute_termination_time(clock, max_seconds, max_nanoseconds, start_seconds, start_nanoseconds, termination_seconds, termination_nanoseconds);
 
     // Print starting message
-    starting_message(max_seconds, max_nanoseconds, start_seconds, start_nanoseconds, termination_seconds, termination_nanoseconds);
+    starting_message(start_seconds, start_nanoseconds, termination_seconds, termination_nanoseconds);
 
     // Run the busy-waiting loop
     run_worker(clock, start_seconds, start_nanoseconds, termination_seconds, termination_nanoseconds);
