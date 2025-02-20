@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
     parse_arguments(argc, argv, max_seconds, max_nanoseconds);
 
     // Attach to the shared clock
-    Shared_Clock shared_clock(SHMKEY, false);
+    Shared_Clock shared_clock(SHMKEY, false); // Create the shared clock
     Clock* clock = shared_clock.get_clock();
     if (clock == NULL) {
         cerr << "Failed to attach to shared clock." << endl;
@@ -121,7 +121,7 @@ void run_worker(Clock* clock, int start_seconds, int start_nanoseconds, int term
         int current_nanoseconds = clock->nanoseconds;
 
         // Check if the termination time has been reached
-        if(current_seconds > last_seconds) {
+        if((current_seconds > last_seconds)) {
             cout << "WORKER PID:" << getpid()
                  << " PPID:" << getppid()
                  << " SysClockS:" << current_seconds

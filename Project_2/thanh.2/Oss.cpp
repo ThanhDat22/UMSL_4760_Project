@@ -36,7 +36,7 @@ int main(int argc, char** argv) {
     Clock* clock = shared_clock.get_clock(); // Get the pointer to the shared clock structure
     if(clock == NULL) {
         cerr << "Failed to create shared clock." << endl;
-        return 1;
+        exit(1);
     }
 
     cout << "OSS: Starting OSS loop..." << endl;
@@ -223,6 +223,16 @@ void increment_clock(Clock* clock, int increment_ns) {
         clock->seconds += clock->nanoseconds / ONE_BILLION;
         clock->nanoseconds %= ONE_BILLION;
     }
+
+    // Notify all worker processes to wake up
+    for (int i = 0; i < MAX_PCB; i++) {
+        if (pcb[i].occupied) {
+            kill(pcb[i].pid, SIGUSR1);  // Wake up worker
+        }
+    }
+
+    std::cout << "DEBUG: Clock Updated -> SysClockS: " << clock->seconds 
+              << " SysClockNano: " << clock->nanoseconds << std::endl;
 }
 
 // Check for terminated workers
