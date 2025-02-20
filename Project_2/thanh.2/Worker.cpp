@@ -53,7 +53,7 @@ void Worker::run() {
             break;    
         }
     }
-    clock.detach_memory(); // Detach the shared memory before exiting
+    clock->detach_memory(); // Detach the shared memory before exiting
 }
 
 // Check if the worker should terminate
