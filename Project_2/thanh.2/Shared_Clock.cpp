@@ -24,45 +24,58 @@ Shared_Clock::Shared_Clock() {
         exit(1);
     }
 
-    // Initialize shared memory clock value:
-    shared_memory_clock[0] = 0; // seconds
-    shared_memory_clock[1] = 0; // nanoseconds
+    // Initialize shared memory clock to 0 if it is the first process
+    struct shmid_ds shm_info;
+    shmctl(shared_memory_id, IPC_STAT, &shm_info);
+    if (shm_info.shm_nattch == 1) {
+        shared_memory_clock[0] = 0; // Initialize seconds
+        shared_memory_clock[1] = 0; // Initialize nanoseconds
+    }
 }
 
 // Destructor:
 Shared_Clock::~Shared_Clock() {
     shmdt(shared_memory_clock); // Detach shared memory segment
-    shmctl(shared_memory_id, IPC_RMID, NULL); // Remove shared memory segment
+    
+    // Remove shared memory segment if no other processes are attached
+    struct shmid_ds shm_info;
+    shmctl(shared_memory_id, IPC_STAT, &shm_info);
+    if (shm_info.shm_nattch == 0) {
+        shmctl(shared_memory_id, IPC_RMID, NULL);
+    }
 }
 
 // Class member functions:
 
 // Return the current seconds
 int Shared_Clock::get_second() {
-    return shared_memory_clock[0]; 
+    return shared_memory_clock ? shared_memory_clock[0] : 0; 
 }
 
 // Return the current nanoseconds
 int Shared_Clock::get_nano_second() {
-    return shared_memory_clock[1]; 
+    return shared_memory_clock ? shared_memory_clock[1] : 0; 
 }
 
 /** Increment the seconds
  *  @param seconds: the number of seconds to increment
  */
 void Shared_Clock::increment_second(int seconds) {
-    shared_memory_clock[0] += seconds; // Increment the seconds
+    if (shared_memory_clock) {
+        shared_memory_clock[0] += seconds;
+    }
 }
 
 /** Increment the nanoseconds
  *  @param nano_seconds: the number of nanoseconds to increment
  */
 void Shared_Clock::increment_nano_second(int nano_seconds) {
-    shared_memory_clock[1] += nano_seconds;
-    if (shared_memory_clock[1] >= ONE_BILLION) { // If nanoseconds exceed 1 second
-        int extra_seconds = shared_memory_clock[1] / ONE_BILLION; // Calculate extra seconds
-        shared_memory_clock[0] += extra_seconds; // Increment seconds
-        shared_memory_clock[1] %= ONE_BILLION; // Update nanoseconds
+    if (shared_memory_clock) {
+        shared_memory_clock[1] += nano_seconds;
+        if (shared_memory_clock[1] >= ONE_BILLION) {
+            shared_memory_clock[0] += shared_memory_clock[1] / ONE_BILLION;
+            shared_memory_clock[1] %= ONE_BILLION;
+        }
     }
 }
 
@@ -77,5 +90,7 @@ void Shared_Clock::set_time(int seconds, int nano_seconds) {
 
 // Detach the shared memory segment
 void Shared_Clock::detach_memory() {
-    shmdt(shared_memory_clock); // Detach shared memory segment
+    if (shared_memory_clock) {
+        shmdt(shared_memory_clock);
+    }
 }
