@@ -18,6 +18,7 @@ using namespace std;
 const int SHMKEY = 859047; // The key for the shared memory segment
 const int ONE_BILLION = 1000000000; // One billion
 
+
 struct Clock {
     int seconds;
     int nanoseconds;

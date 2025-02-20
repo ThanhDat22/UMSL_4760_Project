@@ -21,6 +21,9 @@ Shared_Clock::~Shared_Clock() {
         shmdt(clock);
         clock = NULL; // Set the pointer to NULL
     }
+    if(shm_id >= 0) {
+        shmctl(shm_id, IPC_RMID, NULL); // Remove the shared memory segment
+    }
 }
 
 // Getters:

@@ -11,30 +11,30 @@ OSS_EXECUTABLE = oss
 WORKER_EXECUTABLE = worker
 
 # Source files
-OSS_SRC = Oss.cpp Process.cpp Process_Manager.cpp Shared_Clock.cpp Oss_Main.cpp
-WORKER_SRC = Worker_Main.cpp Worker.cpp Shared_Clock.cpp
+OSS_SRC = Oss.cpp Shared_Clock.cpp
+WORKER_SRC = Worker.cpp Shared_Clock.cpp
 
 # Object files
 OSS_OBJ = $(OSS_SRC:.cpp=.o)
 WORKER_OBJ = $(WORKER_SRC:.cpp=.o)
-
-# Header files
-HEADERS = Oss.h Process.h Process_Manager.h Shared_Clock.h Worker.h
 
 # Default target: build both executables
 all: $(OSS_EXECUTABLE) $(WORKER_EXECUTABLE)
 
 # Compile OSS executable
 $(OSS_EXECUTABLE): $(OSS_OBJ)
-	$(CXX) $(CXXFLAGS) -o $(OSS_EXECUTABLE) $(OSS_OBJ)
+	$(CXX) $(CXXFLAGS) -o $@ $^
 
 # Compile Worker executable
 $(WORKER_EXECUTABLE): $(WORKER_OBJ)
-	$(CXX) $(CXXFLAGS) -o $(WORKER_EXECUTABLE) $(WORKER_OBJ)
+	$(CXX) $(CXXFLAGS) -o $@ $^
 
 # Compile each .cpp file to .o
 %.o: %.cpp $(HEADERS)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+run:
+	./oss -5 -s 3 -t 7 -i 100
 
 # Clean up
 clean:
