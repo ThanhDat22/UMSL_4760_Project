@@ -143,7 +143,7 @@ void run_worker(Clock* clock, int start_seconds, int start_nanoseconds, int term
                  << " TermTimeS:" << terminate_seconds
                  << " TermTimeNano:" << terminate_nanoseconds
                  << "\n--Terminating" << endl;
-            break;
+            return 0;
         }
     }
 
