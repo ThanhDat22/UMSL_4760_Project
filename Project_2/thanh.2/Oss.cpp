@@ -125,6 +125,14 @@ void parse_arguments(int argc, char** argv, int& num_workers, int& max_simul_wor
     time_limit = 0;
     interval = 0;
 
+    // Check for -h anywhere in the arguments
+    for(int i = 1; i < argc; i++) {
+        if(strcmp(argv[i], "-h") == 0) {
+            print_usage();
+            exit(0);
+        }
+    }
+
     while((options = getopt(argc, argv, "hn:s:t:i:")) != -1) {
         switch(options) {
             case 'n':              
@@ -157,7 +165,7 @@ void parse_arguments(int argc, char** argv, int& num_workers, int& max_simul_wor
                 break;
             default:
                 print_usage();
-                exit(1);
+                exit(0);
         }
     }
     if(num_workers <= 0 || max_simul_workers <= 0 || time_limit <= 0 || interval <= 0) {
