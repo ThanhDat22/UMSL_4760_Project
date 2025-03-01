@@ -4,8 +4,10 @@
 
 #include "Oss.h"
 
+PCB pcb[MAX_PCB]; // Array of PCB structures
 
-
+volatile sig_atomic_t timeout_flag = 0; // Flag to indicate timeout
+volatile sig_atomic_t timer_tick = 0; // Flag to indicate timer tick
 
 
 
@@ -48,7 +50,7 @@ int main(int argc, char** argv) {
             timer_tick = 0; // Reset the timer tick flag
             increment_clock(clock, INCREMENT_NS); // Increment the clock
 
-            if(((clock->seconds >= 0) || ((clock->nanoseconds - last_print_ns) >= (500 * INCREMENT_NS))) {
+            if((clock->seconds - last_print_sec) > 0 || (clock->nanoseconds - last_print_ns) >= (500 * INCREMENT_NS)) {
                 print_process_table(clock); // Print the process table
                 last_print_sec = clock->seconds; // Update the last printed second
             }
