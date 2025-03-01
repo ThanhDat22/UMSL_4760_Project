@@ -125,19 +125,32 @@ void run_worker(Clock* clock, int start_seconds, int start_nanoseconds, int term
     sa.sa_flags = 0;
     sigaction(SIGUSR1, &sa, NULL); // Set up signal handler for SIGUSR1
     
+
+    cout << "WORKER PID:" << getpid()
+         << " PPID:" << getppid()
+         << " SysClockS:" << start_seconds
+         << " SysclockNano:" << start_nanoseconds
+         << " TermTimeS:" << terminate_seconds
+         << " TermTimeNano:" << terminate_nanoseconds
+         << "\n--Just Starting" << endl;
+
+
+
     while(true) {
         pause(); // Wait for wake signal
 
         int current_seconds = clock->seconds;
         int current_nanoseconds = clock->nanoseconds;
 
-        // Debugging: Ensure worker sees updated clock values
-        cout << "DEBUG: Worker " << getpid() << " sees clock update: "
-             << current_seconds << "s " << current_nanoseconds << "ns" << endl;
+        // Debugging: Ensure worker sees updated clock values (but limit excessive logging)
+        if (current_nanoseconds % 5000000 == 0) {  // Print every 5ms
+            cout << "DEBUG: Worker " << getpid() << " sees clock update: "
+                 << current_seconds << "s " << current_nanoseconds << "ns" << endl;
+        }
 
         // Check if the termination time has been reached
-        if((current_seconds > terminate_seconds) ||
-           (current_seconds == terminate_seconds && current_nanoseconds >= terminate_nanoseconds)) {
+        if ((current_seconds > terminate_seconds) || 
+            (current_seconds == terminate_seconds && current_nanoseconds >= terminate_nanoseconds)) {
             cout << "WORKER PID:" << getpid()
                  << " PPID:" << getppid()
                  << " SysClockS:" << current_seconds
@@ -145,7 +158,7 @@ void run_worker(Clock* clock, int start_seconds, int start_nanoseconds, int term
                  << " TermTimeS:" << terminate_seconds
                  << " TermTimeNano:" << terminate_nanoseconds
                  << "\n--Terminating" << endl;
-            exit(0);
+            exit(0);  // Terminate the worker
         }
     }
 }

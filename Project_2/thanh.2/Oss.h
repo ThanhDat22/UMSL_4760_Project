@@ -195,8 +195,8 @@ void print_process_table(Clock* clock) {
 void increment_clock(Clock* clock, int increment_ns) {
     clock->nanoseconds += increment_ns;
     if (clock->nanoseconds >= ONE_BILLION) {
-        clock->seconds += clock->nanoseconds / ONE_BILLION;
-        clock->nanoseconds %= ONE_BILLION;
+        clock->seconds += 1;
+        clock->nanoseconds -= ONE_BILLION;
     }
 
     // Notify all worker processes to wake up
