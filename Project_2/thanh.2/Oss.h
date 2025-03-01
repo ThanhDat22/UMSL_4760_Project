@@ -21,7 +21,18 @@
 
 extern volatile sig_atomic_t timeout_flag;
 extern volatile sig_atomic_t timer_tick;
-extern PCB pcb[MAX_PCB]; // Array of PCB structures
+
+const int MAX_PCB = 20; // Maximum number of processes
+const int INCREMENT_NS = 1000000; // Increment in nanoseconds per loop
+
+struct PCB {
+    int occupied; // 1 if occupied, 0 if not
+    pid_t pid; // Process ID
+    int start_seconds; // Start time in seconds
+    int start_nanoseconds; // Start time in nanoseconds
+};
+
+PCB pcb[MAX_PCB]; // Array of PCB structures
 
 //Function prototypes
 void signal_handler(int); // Signal handler
@@ -37,15 +48,7 @@ void parse_arguments(int, char**, int&, int&, int&, int&); // Parse command line
 void setup_timer(int); // Setup the timer
 bool is_number(const char*); // Check if a string is a number
 
-const int MAX_PCB = 20; // Maximum number of processes
-const int INCREMENT_NS = 1000000; // Increment in nanoseconds per loop
 
-struct PCB {
-    int occupied; // 1 if occupied, 0 if not
-    pid_t pid; // Process ID
-    int start_seconds; // Start time in seconds
-    int start_nanoseconds; // Start time in nanoseconds
-};
 
 // Function definitions
 
