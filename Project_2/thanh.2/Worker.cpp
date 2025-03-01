@@ -7,6 +7,7 @@
 #include <iostream>
 #include <cstdlib>    // for atoi()
 #include <unistd.h>   // for getpid(), getppid()
+#include <signal.h>   // for signal(), SIGUSR1
 
 using namespace std;
 

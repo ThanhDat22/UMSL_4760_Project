@@ -31,7 +31,7 @@ struct PCB {
     int start_nanoseconds; // Start time in nanoseconds
 };
 
-PCB pcb[MAX_PCB]; // Array of PCB structures
+extern PCB pcb[MAX_PCB]; // Array of PCB structures
 
 // Global variables declaration
 extern volatile sig_atomic_t timeout_flag;
