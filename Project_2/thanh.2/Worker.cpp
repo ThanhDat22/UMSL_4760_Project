@@ -105,6 +105,9 @@ void compute_termination_time(Clock* clock, int max_seconds, int max_nanoseconds
         terminate_seconds += terminate_nanoseconds / ONE_BILLION;
         terminate_nanoseconds %= ONE_BILLION;
     }
+    // Debugging output to check computed termination time
+    cout << "DEBUG: Worker PID " << getpid() << " Termination Time -> "
+         << "Seconds: " << terminate_seconds << " Nanoseconds: " << terminate_nanoseconds << endl;
 }
 
 /** @brief Runs the worker process in a busy-waiting loop until the termination time is reached.
@@ -126,6 +129,10 @@ void run_worker(Clock* clock, int start_seconds, int start_nanoseconds, int term
 
         int current_seconds = clock->seconds;
         int current_nanoseconds = clock->nanoseconds;
+
+        // Debugging: Ensure worker sees updated clock values
+        cout << "DEBUG: Worker " << getpid() << " sees clock update: "
+             << current_seconds << "s " << current_nanoseconds << "ns" << endl;
 
         // Check if the termination time has been reached
         if((current_seconds > terminate_seconds) ||

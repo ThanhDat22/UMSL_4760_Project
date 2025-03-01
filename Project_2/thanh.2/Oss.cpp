@@ -51,6 +51,7 @@ int main(int argc, char** argv) {
             if((clock->seconds - last_print_sec) > 0 || (clock->nanoseconds - last_print_ns) >= (500 * INCREMENT_NS)) {
                 print_process_table(clock); // Print the process table
                 last_print_sec = clock->seconds; // Update the last printed second
+                last_print_ns = clock->nanoseconds; // Update the last printed nanosecond
             }
 
             check_terminated_workers(); // Check for terminated workers

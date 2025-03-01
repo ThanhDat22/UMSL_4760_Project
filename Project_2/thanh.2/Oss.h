@@ -297,6 +297,4 @@ bool launch_worker(Clock* clock, int time_upper_bound) {
 }
 
 
-
-
 #endif // OSS_H
