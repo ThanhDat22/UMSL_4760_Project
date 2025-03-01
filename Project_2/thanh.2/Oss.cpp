@@ -71,6 +71,7 @@ int main(int argc, char** argv) {
                 for(int i = 0; i < MAX_PCB; i++) {
                     if(pcb[i].occupied) {
                         kill(pcb[i].pid, SIGTERM);
+                        waitpid(pcb[i].pid, NULL, 0); // Wait for the worker to terminate
                     }
                 }
                 break;

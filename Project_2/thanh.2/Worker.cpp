@@ -17,6 +17,7 @@ void starting_message(int, int, int, int); // Print starting message
 void parse_arguments(int, char**, int&, int&); // Parse command line arguments
 void compute_termination_time(Clock*, int, int, int&, int&, int&, int&); // Compute termination time
 void run_worker(Clock*, int, int, int, int); // Run worker process
+void wake_signal_handler(int); // Signal handler for wake signal
 
 // Main function
 int main(int argc, char** argv) {
@@ -114,28 +115,21 @@ void compute_termination_time(Clock* clock, int max_seconds, int max_nanoseconds
  *  @param terminate_nanoseconds The termination nanoseconds.
  */
 void run_worker(Clock* clock, int start_seconds, int start_nanoseconds, int terminate_seconds, int terminate_nanoseconds) {
-    int last_seconds = start_seconds;
+   struct sigaction sa;
+    sa.sa_handler = wake_signal_handler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+    sigaction(SIGUSR1, &sa, NULL); // Set up signal handler for SIGUSR1
     
     while(true) {
+        pause(); // Wait for wake signal
+
         int current_seconds = clock->seconds;
         int current_nanoseconds = clock->nanoseconds;
 
         // Check if the termination time has been reached
-        if((current_seconds > last_seconds)) {
-            cout << "WORKER PID:" << getpid()
-                 << " PPID:" << getppid()
-                 << " SysClockS:" << current_seconds
-                 << " SysclockNano:" << current_nanoseconds
-                 << " TermTimeS:" << terminate_seconds
-                 << " TermTimeNano:" << terminate_nanoseconds
-                 << "\n--" << (current_seconds - start_seconds)
-                 << " seconds have passed since starting" << endl;
-            
-            last_seconds = current_seconds;
-        }
-
-        if ((current_seconds > terminate_seconds) ||
-            (current_seconds == terminate_seconds && current_nanoseconds >= terminate_nanoseconds)) {
+        if((current_seconds > terminate_seconds) ||
+           (current_seconds == terminate_seconds && current_nanoseconds >= terminate_nanoseconds)) {
             cout << "WORKER PID:" << getpid()
                  << " PPID:" << getppid()
                  << " SysClockS:" << current_seconds
@@ -146,5 +140,9 @@ void run_worker(Clock* clock, int start_seconds, int start_nanoseconds, int term
             exit(0);
         }
     }
+}
 
+// Signal handler for wake signal
+void wake_signal_handler(int signum) {
+    return; // Do nothing
 }

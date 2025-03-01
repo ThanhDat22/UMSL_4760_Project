@@ -19,12 +19,11 @@
 #include <getopt.h>      // For getopt()
 #include <cstring>       // For strcmp()
 
-extern volatile sig_atomic_t timeout_flag;
-extern volatile sig_atomic_t timer_tick;
-
+// Constants
 const int MAX_PCB = 20; // Maximum number of processes
 const int INCREMENT_NS = 1000000; // Increment in nanoseconds per loop
 
+// Struct for the Process Control Block (PCB)
 struct PCB {
     int occupied; // 1 if occupied, 0 if not
     pid_t pid; // Process ID
@@ -33,6 +32,10 @@ struct PCB {
 };
 
 PCB pcb[MAX_PCB]; // Array of PCB structures
+
+// Global variables declaration
+extern volatile sig_atomic_t timeout_flag;
+extern volatile sig_atomic_t timer_tick;
 
 //Function prototypes
 void signal_handler(int); // Signal handler
