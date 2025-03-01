@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
             timer_tick = 0; // Reset the timer tick flag
             increment_clock(clock, INCREMENT_NS); // Increment the clock
 
-            if((clock->seconds - last_print_sec) > 0 || (clock->nanoseconds - last_print_ns) >= (500 * INCREMENT_NS)) {
+            if((clock->nanoseconds - last_print_ns) >= (500 * INCREMENT_NS) || (clock->seconds - last_print_sec) > 0) {
                 print_process_table(clock); // Print the process table
                 last_print_sec = clock->seconds; // Update the last printed second
                 last_print_ns = clock->nanoseconds; // Update the last printed nanosecond
