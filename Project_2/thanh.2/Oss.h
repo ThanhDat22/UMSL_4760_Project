@@ -18,9 +18,11 @@
 #include <sstream>       // For std::ostringstream
 #include <getopt.h>      // For getopt()
 
-extern volatile sig_atomic_t timeout_flag;
-extern volatile sig_atomic_t timer_tick;
-
+// extern volatile sig_atomic_t timeout_flag;
+// extern volatile sig_atomic_t timer_tick;
+PCB pcb[MAX_PCB]; // Array of PCB structures
+volatile sig_atomic_t timeout_flag = 0; // Flag to indicate timeout
+volatile sig_atomic_t timer_tick = 0; // Flag to indicate timer tick
 //Function prototypes
 void signal_handler(int); // Signal handler
 void print_usage(); // Print usage information
