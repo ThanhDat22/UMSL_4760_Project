@@ -45,10 +45,10 @@ struct msg_buffer {
 }
 
 // Global variables declaration
-volatile sig_atomic_t timeout_flag;
-volatile sig_atomic_t timer_tick;
-int msqid;
-ofstream fout;
+extern volatile sig_atomic_t timeout_flag;
+extern volatile sig_atomic_t timer_tick;
+extern int msqid;
+extern ofstream fout;
 
 //Function prototypes
 //void signal_handler(int); // Signal handler
