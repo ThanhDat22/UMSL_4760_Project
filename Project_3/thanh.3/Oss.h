@@ -1,6 +1,6 @@
 // Created by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-02-13
 
-// Last edited by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-02-19
+// Last edited by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-03-12
 
 
 #ifndef OSS_H
@@ -18,6 +18,7 @@
 #include <sstream>       // For std::ostringstream
 #include <getopt.h>      // For getopt()
 #include <cstring>       // For strcmp()
+#include <sys/msg.h>     // For message queue
 
 // Constants
 const int MAX_PCB = 20; // Maximum number of processes
@@ -34,6 +35,13 @@ struct PCB {
 
 extern PCB pcb[MAX_PCB]; // Array of PCB structures
 
+// Message structure definition
+struct msg_buffer {
+    long mtype; // Message type
+    char str_data[100]; // Message data
+    int int_data; // Integer data
+}
+
 // Global variables declaration
 extern volatile sig_atomic_t timeout_flag;
 extern volatile sig_atomic_t timer_tick;
@@ -46,13 +54,10 @@ void print_process_table(Clock*); // Print the process table
 void increment_clock(Clock*, int); // Increment the clock
 void check_terminated_workers(); // Check for terminated workers
 int count_running_workers(); // Count the number of running workers
-//string to_string(const int); // Convert an integer to a string
 bool launch_worker(Clock*, int); // Launch a worker process
 void parse_arguments(int, char**, int&, int&, int&, int&); // Parse command line arguments
 void setup_timer(int); // Setup the timer
 bool is_number(const char*); // Check if a string is a number
-
-
 
 // Function definitions
 
@@ -241,15 +246,6 @@ int count_running_workers() {
     return count;
 }
 
-/** @brief Converts an integer to a string.
- *  @param num The integer to convert.
- *  @return The string representation of the integer.
- */
-// string to_string(const int num) {
-//     ostringstream oss;
-//     oss << num;
-//     return oss.str();
-// }
 
 /** @brief Launches a worker process.
  *  @param clock Pointer to the shared clock structure.

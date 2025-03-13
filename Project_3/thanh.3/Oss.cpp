@@ -1,6 +1,6 @@
 // Created by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-02-13
 
-// Last edited by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-02-20
+// Last edited by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-03-12
 
 #include "Oss.h"
 
@@ -17,6 +17,21 @@ int main(int argc, char** argv) {
     int max_simul_workers; // Maximum number of simultaneous workers
     int time_limit; // Time limit for each worker
     int interval; // Interval to launch workers
+
+    key_t key;
+    int msgid;
+
+    // Generate key for the message queue
+    if((key = ftok("Oss.cpp", 65)) == -1) {
+        perror("ftok");
+        exit(1);
+    }
+
+    // Create the message queue
+    if((msgid = msgget(key, 0666 | IPC_CREAT)) == -1) {
+        perror("msgget");
+        exit(1);
+    }
 
     // Parse command line arguments
     parse_arguments(argc, argv, num_workers, max_simul_workers, time_limit, interval);
@@ -37,28 +52,34 @@ int main(int argc, char** argv) {
         exit(1);
     }
 
-    cout << "OSS: Starting OSS loop..." << endl;
-
     int workers_launched = 0; // Number of workers launched
-    int last_print_sec = clock->seconds; // Last printed second
-    int last_print_ns = clock->nanoseconds; // Last printed nanosecond
 
     while(true) {
         if(timer_tick) {
             timer_tick = 0; // Reset the timer tick flag
             increment_clock(clock, INCREMENT_NS); // Increment the clock
 
-            if((clock->nanoseconds - last_print_ns) >= (500 * INCREMENT_NS) || (clock->seconds - last_print_sec) > 0) {
-                print_process_table(clock); // Print the process table
-                last_print_sec = clock->seconds; // Update the last printed second
-                last_print_ns = clock->nanoseconds; // Update the last printed nanosecond
-            }
-
             check_terminated_workers(); // Check for terminated workers
 
             if(workers_launched < num_workers && count_running_workers() < max_simul_workers) {
                 if(launch_worker(clock, time_limit)) {
                     workers_launched++; // Increment the number of workers launched
+                }
+            }
+
+            for (int i = 0; i < MAX_PCB; i++) {
+                if (pcb[i].occupied) {
+                    msg_buffer buf;
+                    buf.mtype = pcb[i].pid;
+                    strcpy(buf.str_data, "Message from OSS");
+                    buf.int_data = rand() % 100;
+
+                    if (msgsnd(msqid, &buf, sizeof(buf) - sizeof(long), 0) == -1) {
+                        perror("msgsnd");
+                    } else {
+                        cout << "OSS: Sent message to worker " << pcb[i].pid << endl;
+                        pcb[i].message_sent++;
+                    }
                 }
             }
 
@@ -81,8 +102,11 @@ int main(int argc, char** argv) {
         }
     }
 
-    shared_clock.remove_segment(); // Remove the shared clock
-    cout << "OSS: All workers finished. Exiting OSS" << endl;
+    // Cleanup
+    shared_clock.remove_segment();
+    if (msgctl(msqid, IPC_RMID, NULL) == -1) {
+        perror("msgctl");
+    }
     return 0;
 
 }
