@@ -1,42 +1,45 @@
 # Created by Thanh Dat Nguyen on 2025-02-11
 
-# Last updated by Thanh Dat Nguyen on 2025-02-20
+# Last updated by Thanh Dat Nguyen on 2025-03-13
 
-# Compiler
-CXX = g++ -g3  # Use g++ for C++ files
-CXXFLAGS = -Wall -g3  # Enable warnings, debugging
+# Compiler and flags
+CXX = g++
+CXXFLAGS = -Wall -std=c++98 -g
 
-# Executable name
-OSS_EXECUTABLE = oss
-WORKER_EXECUTABLE = worker
+# Targets and sources
+TARGET = oss
+WORKER = worker
+OBJS = Oss.o Shared_Clock.o
+WORKER_OBJS = Worker.o Shared_Clock.o
 
-# Source files
-OSS_SRC = Oss.cpp Shared_Clock.cpp
-WORKER_SRC = Worker.cpp Shared_Clock.cpp
+# Build the project
+all: $(TARGET) $(WORKER)
 
-# Object files
-OSS_OBJ = $(OSS_SRC:.cpp=.o)
-WORKER_OBJ = $(WORKER_SRC:.cpp=.o)
+$(TARGET): $(OBJS)
+	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) -lrt
 
-# Default target: build both executables
-all: $(OSS_EXECUTABLE) $(WORKER_EXECUTABLE)
+$(WORKER): $(WORKER_OBJS)
+	$(CXX) $(CXXFLAGS) -o $(WORKER) $(WORKER_OBJS) -lrt
 
-# Compile OSS executable
-$(OSS_EXECUTABLE): $(OSS_OBJ)
-	$(CXX) $(CXXFLAGS) -o $@ $^
+# Compile object files
+Oss.o: Oss.cpp Oss.h Shared_Clock.h
+	$(CXX) $(CXXFLAGS) -c Oss.cpp
 
-# Compile Worker executable
-$(WORKER_EXECUTABLE): $(WORKER_OBJ)
-	$(CXX) $(CXXFLAGS) -o $@ $^
+Worker.o: Worker.cpp Worker.h Shared_Clock.h
+	$(CXX) $(CXXFLAGS) -c Worker.cpp
 
-# Compile each .cpp file to .o
-%.o: %.cpp $(HEADERS)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+Shared_Clock.o: Shared_Clock.cpp Shared_Clock.h
+	$(CXX) $(CXXFLAGS) -c Shared_Clock.cpp
 
-run:
-	./oss -n 5 -s 3 -t 2 -i 100
-
-# Clean up
+# Clean up generated files
 clean:
-	rm -f $(OSS_OBJ) $(WORKER_OBJ) $(OSS_EXECUTABLE) $(WORKER_EXECUTABLE) *.o *.exe
+	rm -f $(TARGET) $(WORKER) $(OBJS) $(WORKER_OBJS) *.txt *.o *.exe
+
+# Run the project
+run: all
+	./$(TARGET) -n 5 -s 2 -t 10 -i 500 -f logfile.txt
+
+# Avoid conflicts with files named 'clean' or 'run'
+.PHONY: all clean run
+
 
