@@ -18,6 +18,7 @@ int main(int argc, char** argv) {
     int max_simul_workers; // Maximum number of simultaneous workers
     int time_limit; // Time limit for each worker
     int interval; // Interval to launch workers
+    string log_file; // Log file name
 
     key_t key;
     
@@ -35,7 +36,7 @@ int main(int argc, char** argv) {
     }
 
     // Parse command line arguments
-    parse_arguments(argc, argv, num_workers, max_simul_workers, time_limit, interval);
+    parse_arguments(argc, argv, num_workers, max_simul_workers, time_limit, interval, log_file);
 
     signal(SIGALRM, signal_handler); // Set up signal handler for SIGALRM
     signal(SIGTERM, signal_handler); // Set up signal handler for SIGTERM

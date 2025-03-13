@@ -21,6 +21,7 @@
 #include <sys/msg.h>     // For message queue
 #include <cstdio>        // For perror()
 #include <fstream>       // For file I/O
+#include <signal.h>
 
 // Constants
 const int MAX_PCB = 20; // Maximum number of processes
