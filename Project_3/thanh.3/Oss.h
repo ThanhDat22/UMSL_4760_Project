@@ -185,12 +185,14 @@ bool is_number(const char *str) {
 
 // Print usage information
 void print_usage() {
-    cout << "Usage: ./oss [-h] [-n proc] [-s simul] [-t timelimitForChildren] [-i intervalInMsToLaunchChildren]" << endl;
+    cout << "Usage: ./oss [-h] [-n proc] [-s simul] [-t timelimitForChildren] [-i intervalInMsToLaunchChildren] [-f logfile]" << endl;
     cout << "[-h] Display this help message." << endl;
     cout << "[-n proc] Stands for the number of worker processes to launch." << endl;
     cout << "[-s simul] Indicates the maximum number of worker processes to allow to run simultaneously." << endl;
     cout << "[-t timelimitForChildren] Indicates the maximum time limit in seconds for each worker process." << endl;
     cout << "[-i intervalInMsToLaunchChildren] Indicates the time interval in milliseconds to launch user processes." << endl;
+    cout << "[-f logfile] Indicates the name of the log file." << endl;
+    cout << "Example: ./oss -n 5 -s 2 -t 20 -i 1000 -f log.txt" << endl;
 }
 
 // Initialize the process table

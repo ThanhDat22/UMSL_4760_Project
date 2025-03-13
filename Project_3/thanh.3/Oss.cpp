@@ -80,16 +80,42 @@ int main(int argc, char** argv) {
                     strcpy(buf.str_data, "Message from OSS");
                     buf.int_data = rand() % 100;
 
+                    fout << "OSS: Sending message to worker " << i 
+                        << " PID " << pcb[i].pid 
+                        << " at time " << clock->seconds 
+                        << ":" << clock->nanoseconds << endl;
+
+                    cout << "OSS: Sending message to worker " << i 
+                        << " PID " << pcb[i].pid 
+                        << " at time " << clock->seconds 
+                        << ":" << clock->nanoseconds << endl;
+
+
                     msg_buffer buf;
                     if (msgrcv(msqid, &buf, sizeof(buf) - sizeof(long), pcb[i].pid, 0) == -1) {
                         perror("msgrcv");
                     } else {
-                        fout << "OSS: Received message from worker " << pcb[i].pid << " with data: " << buf.int_data << endl;
-                        cout << "OSS: Received message from worker " << pcb[i].pid << " with data: " << buf.int_data << endl;
+                        
+                        cout << "OSS: Received message from worker " << i 
+                            << " PID " << pcb[i].pid 
+                            << " at time " << clock->seconds 
+                            << ":" << clock->nanoseconds << endl;
+                        fout << "OSS: Received message from worker " << i 
+                            << " PID " << pcb[i].pid 
+                            << " at time " << clock->seconds 
+                            << ":" << clock->nanoseconds << endl;    
+
+
                         pcb[i].message_sent++;
-                        if (buf.int_data == 999) {
-                            cout << "OSS: Worker " << pcb[i].pid << " has terminated." << endl;
-                            fout << "OSS: Worker " << pcb[i].pid << " has terminated." << endl;
+                        if (buf.int_data == 0) {
+                            
+                            cout << "OSS: Worker " << i 
+                                << " PID " << pcb[i].pid 
+                                << " is planning to terminate." << endl;
+
+                            fout << "OSS: Worker " << i
+                                << " PID " << pcb[i].pid
+                                << " is planning to terminate." << endl;
     
                             waitpid(pcb[i].pid, NULL, 0); // Wait for the worker to terminate
     
@@ -129,6 +155,9 @@ int main(int argc, char** argv) {
     if (msgctl(msqid, IPC_RMID, NULL) == -1) {
         perror("msgctl");
     }
+
+    // Close the log file
+    fout.close();
     return 0;
 
 }

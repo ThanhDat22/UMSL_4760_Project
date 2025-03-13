@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
 
         buf.mtype = getppid();
         strcpy(buf.str_data, "Worker done");
-        buf.int_data = 999;
+        buf.int_data = 0;
 
         if (msgsnd(msqid, &buf, sizeof(buf) - sizeof(long), 0) == -1) {
             perror("msgsnd");
