@@ -29,6 +29,7 @@ struct PCB {
     pid_t pid; // Process ID
     int start_seconds; // Start time in seconds
     int start_nanoseconds; // Start time in nanoseconds
+    int message_sent; // track the number of messages sent to the worker
 };
 
 extern PCB pcb[MAX_PCB]; // Array of PCB structures
@@ -169,6 +170,7 @@ void init_process_table() {
         pcb[i].pid = 0;
         pcb[i].start_seconds = 0;
         pcb[i].start_nanoseconds = 0;
+        pcb[i].message_sent = 0;
     }
 }
 
@@ -178,12 +180,13 @@ void print_process_table(Clock* clock) {
          << " SysClockS:" << clock->seconds
          << " SysClockNano:" << clock->nanoseconds << endl;
     cout << "Process Table:" << endl;
-    cout << "Entry\tOccupied\tPID\tStartS\tStartN" << endl;
+    cout << "Entry\tOccupied\tPID\tStartS\tStartN\tMessagesSent" << endl;
     for (int i = 0; i < MAX_PCB; i++) {
         cout << i << "\t" <<pcb[i].occupied << "\t\t" 
              << pcb[i].pid << "\t" 
              << pcb[i].start_seconds << "\t" 
-             << pcb[i].start_nanoseconds << endl;
+             << pcb[i].start_nanoseconds << "\t"
+             << pcb[i].message_sent << endl;
     }
 }
 
