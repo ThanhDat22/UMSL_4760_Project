@@ -4,8 +4,8 @@
 
 #include "Oss.h"
 
-volatile sig_atomic_t timeout_flag = 0; // Flag to indicate timeout
-volatile sig_atomic_t timer_tick = 0; // Flag to indicate timer tick
+sig_atomic_t timeout_flag = 0; // Flag to indicate timeout
+sig_atomic_t timer_tick = 0; // Flag to indicate timer tick
 int msqid;
 
 PCB pcb[MAX_PCB]; // Array of PCB structures
