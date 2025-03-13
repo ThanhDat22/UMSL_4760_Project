@@ -46,7 +46,7 @@ struct msg_buffer {
 }
 
 // Global variables declaration
-extern volatile sig_atomic_t timeout_flag;
+//extern volatile sig_atomic_t timeout_flag;
 extern volatile sig_atomic_t timer_tick;
 extern int msqid;
 extern ofstream fout;
