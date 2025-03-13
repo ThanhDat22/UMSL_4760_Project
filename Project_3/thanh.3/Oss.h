@@ -25,6 +25,7 @@
 // Constants
 const int MAX_PCB = 20; // Maximum number of processes
 
+
 // Struct for the Process Control Block (PCB)
 struct PCB {
     int occupied; // 1 if occupied, 0 if not
@@ -46,6 +47,8 @@ struct msg_buffer {
 // Global variables declaration
 extern volatile sig_atomic_t timeout_flag;
 extern volatile sig_atomic_t timer_tick;
+extern int msqid;
+extern ofstream fout;
 
 //Function prototypes
 void signal_handler(int); // Signal handler
@@ -128,6 +131,7 @@ void parse_arguments(int argc, char** argv, int& num_workers, int& max_simul_wor
         }
     }
 
+    ofstream fout;
     while((options = getopt(argc, argv, "hn:s:t:i:f:")) != -1) {
         switch(options) {
             case 'n':              
@@ -159,7 +163,7 @@ void parse_arguments(int argc, char** argv, int& num_workers, int& max_simul_wor
                 interval = atoi(optarg);
                 break;
             case 'f':
-                ofstream fout; // Create  an output file stream
+                
                 fout.open(log_file.c_str()); // Open the file
                 
 

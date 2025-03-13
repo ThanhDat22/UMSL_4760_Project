@@ -6,6 +6,7 @@
 
 volatile sig_atomic_t timeout_flag = 0; // Flag to indicate timeout
 volatile sig_atomic_t timer_tick = 0; // Flag to indicate timer tick
+int msqid;
 
 PCB pcb[MAX_PCB]; // Array of PCB structures
 
@@ -19,7 +20,7 @@ int main(int argc, char** argv) {
     int interval; // Interval to launch workers
 
     key_t key;
-    int msqid;
+    
 
     // Generate key for the message queue
     if((key = ftok("Oss.cpp", 65)) == -1) {
