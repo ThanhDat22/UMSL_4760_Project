@@ -8,6 +8,10 @@
 #include <cstdlib>    // for atoi()
 #include <unistd.h>   // for getpid(), getppid()
 #include <signal.h>   // for signal(), SIGUSR1
+#include <sys/msg.h>
+#include <sys/ipc.h>
+#include <cstring>
+#include <cstdio>
 
 
 using namespace std;
