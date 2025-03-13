@@ -18,7 +18,7 @@
 #include <sstream>       // For std::ostringstream
 #include <getopt.h>      // For getopt()
 #include <cstring>       // For strcmp()
-#include <sys/msq.h>     // For message queue
+#include <sys/msg.h>     // For message queue
 #include <cstdio>        // For perror()
 #include <fstream>       // For file I/O
 
