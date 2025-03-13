@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
     }
 
     // Create the message queue
-    if((msgid = msgget(key, 0666 | IPC_CREAT)) == -1) {
+    if((msqid = msgget(key, 0666 | IPC_CREAT)) == -1) {
         perror("msgget");
         exit(1);
     }

@@ -18,7 +18,7 @@
 #include <sstream>       // For std::ostringstream
 #include <getopt.h>      // For getopt()
 #include <cstring>       // For strcmp()
-#include <sys/msg.h>     // For message queue
+#include <sys/msq.h>     // For message queue
 #include <cstdio>        // For perror()
 #include <fstream>       // For file I/O
 
@@ -45,13 +45,13 @@ struct msg_buffer {
 }
 
 // Global variables declaration
-extern volatile sig_atomic_t timeout_flag;
-extern volatile sig_atomic_t timer_tick;
-extern int msqid;
-extern ofstream fout;
+volatile sig_atomic_t timeout_flag;
+volatile sig_atomic_t timer_tick;
+int msqid;
+ofstream fout;
 
 //Function prototypes
-void signal_handler(int); // Signal handler
+//void signal_handler(int); // Signal handler
 void print_usage(); // Print usage information
 void init_process_table(); // Initialize the process table
 void print_process_table(Clock*); // Print the process table
@@ -68,23 +68,23 @@ bool is_number(const char*); // Check if a string is a number
 /** * @brief Signal handler for SIGALRM and SIGINT signals.
     * @param sig The signal number.
  */
-void signal_handler(int sig) {
-    if (sig == SIGALRM || sig == SIGINT) {
-        timeout_flag = 1;
-        for (int i = 0; i < MAX_PCB; i++) {
-            if (pcb[i].occupied) {
-                kill(pcb[i].pid, SIGTERM);
-                waitpid(pcb[i].pid, NULL, 0);
-            }
-        }
-        // Cleanup message queue
-        if (msgctl(msqid, IPC_RMID, NULL) == -1) {
-            perror("msgctl failed");
-        }
-        cout << "\nOSS: Program terminated due to timeout or signal." << endl;
-        exit(0);
-    }
-}
+// void signal_handler(int sig) {
+//     if (sig == SIGALRM || sig == SIGINT) {
+//         timeout_flag = 1;
+//         for (int i = 0; i < MAX_PCB; i++) {
+//             if (pcb[i].occupied) {
+//                 kill(pcb[i].pid, SIGTERM);
+//                 waitpid(pcb[i].pid, NULL, 0);
+//             }
+//         }
+//         // Cleanup message queue
+//         if (msgctl(msqid, IPC_RMID, NULL) == -1) {
+//             perror("msgctl failed");
+//         }
+//         cout << "\nOSS: Program terminated due to timeout or signal." << endl;
+//         exit(0);
+//     }
+// }
 
 /** @brief Signal handler for SIGUSR1 signal.
  *  @param signum The signal number.
