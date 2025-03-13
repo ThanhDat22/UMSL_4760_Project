@@ -17,7 +17,7 @@ struct msg_buffer {
     long mtype; // Message type
     char str_data[100]; // Message data
     int int_data; // Integer data
-}
+};
 
 // Function prototypes
 
