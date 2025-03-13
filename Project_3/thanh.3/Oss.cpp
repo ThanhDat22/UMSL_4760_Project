@@ -57,7 +57,14 @@ int main(int argc, char** argv) {
     while(true) {
         if(timer_tick) {
             timer_tick = 0; // Reset the timer tick flag
-            increment_clock(clock, INCREMENT_NS); // Increment the clock
+            
+            // Increment clock based on number of running workers
+            int running_children = count_running_workers();
+            int increment_ns = (running_children > 0) 
+                                ? (250 * 1000000) / running_children 
+                                : (250 * 1000000);
+
+            increment_clock(clock, increment_ns);
 
             check_terminated_workers(); // Check for terminated workers
 
@@ -69,17 +76,32 @@ int main(int argc, char** argv) {
 
             for (int i = 0; i < MAX_PCB; i++) {
                 if (pcb[i].occupied) {
-                    msg_buffer buf;
                     buf.mtype = pcb[i].pid;
                     strcpy(buf.str_data, "Message from OSS");
                     buf.int_data = rand() % 100;
 
-                    if (msgsnd(msqid, &buf, sizeof(buf) - sizeof(long), 0) == -1) {
-                        perror("msgsnd");
+                    msg_buffer buf;
+                    if (msgrcv(msqid, &buf, sizeof(buf) - sizeof(long), pcb[i].pid, 0) == -1) {
+                        perror("msgrcv");
                     } else {
-                        cout << "OSS: Sent message to worker " << pcb[i].pid << endl;
+                        fout << "OSS: Received message from worker " << pcb[i].pid << " with data: " << buf.int_data << endl;
+                        cout << "OSS: Received message from worker " << pcb[i].pid << " with data: " << buf.int_data << endl;
                         pcb[i].message_sent++;
+                        if (buf.int_data == 999) {
+                            cout << "OSS: Worker " << pcb[i].pid << " has terminated." << endl;
+                            fout << "OSS: Worker " << pcb[i].pid << " has terminated." << endl;
+    
+                            waitpid(pcb[i].pid, NULL, 0); // Wait for the worker to terminate
+    
+                            pcb[i].occupied = 0;
+                            pcb[i].pid = 0;
+                            pcb[i].start_seconds = 0;
+                            pcb[i].start_nanoseconds = 0;
+                            pcb[i].message_sent = 0;
+                        }
                     }
+
+                    
                 }
             }
 

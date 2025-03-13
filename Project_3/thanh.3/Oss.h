@@ -22,7 +22,6 @@
 
 // Constants
 const int MAX_PCB = 20; // Maximum number of processes
-const int INCREMENT_NS = 1000000; // Increment in nanoseconds per loop
 
 // Struct for the Process Control Block (PCB)
 struct PCB {
@@ -55,11 +54,32 @@ void increment_clock(Clock*, int); // Increment the clock
 void check_terminated_workers(); // Check for terminated workers
 int count_running_workers(); // Count the number of running workers
 bool launch_worker(Clock*, int); // Launch a worker process
-void parse_arguments(int, char**, int&, int&, int&, int&); // Parse command line arguments
+void parse_arguments(int, char**, int&, int&, int&, int&, string &); // Parse command line arguments
 void setup_timer(int); // Setup the timer
 bool is_number(const char*); // Check if a string is a number
 
 // Function definitions
+
+/** * @brief Signal handler for SIGALRM and SIGINT signals.
+    * @param sig The signal number.
+ */
+void signal_handler(int sig) {
+    if (sig == SIGALRM || sig == SIGINT) {
+        timeout_flag = 1;
+        for (int i = 0; i < MAX_PCB; i++) {
+            if (pcb[i].occupied) {
+                kill(pcb[i].pid, SIGTERM);
+                waitpid(pcb[i].pid, NULL, 0);
+            }
+        }
+        // Cleanup message queue
+        if (msgctl(msqid, IPC_RMID, NULL) == -1) {
+            perror("msgctl failed");
+        }
+        cout << "\nOSS: Program terminated due to timeout or signal." << endl;
+        exit(0);
+    }
+}
 
 /** @brief Signal handler for SIGUSR1 signal.
  *  @param signum The signal number.
@@ -91,7 +111,7 @@ void setup_timer(int interval_ms) {
  *  @param time_limit The maximum time limit in seconds for each worker process.
  *  @param interval The time interval in milliseconds to launch user processes.
  */
-void parse_arguments(int argc, char** argv, int& num_workers, int& max_simul_workers, int& time_limit, int& interval) {
+void parse_arguments(int argc, char** argv, int& num_workers, int& max_simul_workers, int& time_limit, int& interval, string &log_file) {
     int options;
     num_workers = 0;
     max_simul_workers = 0;
@@ -106,7 +126,7 @@ void parse_arguments(int argc, char** argv, int& num_workers, int& max_simul_wor
         }
     }
 
-    while((options = getopt(argc, argv, "hn:s:t:i:")) != -1) {
+    while((options = getopt(argc, argv, "hn:s:t:i:f:")) != -1) {
         switch(options) {
             case 'n':              
                 if(!is_number(optarg)) {
@@ -136,6 +156,11 @@ void parse_arguments(int argc, char** argv, int& num_workers, int& max_simul_wor
                 }
                 interval = atoi(optarg);
                 break;
+            case 'f':
+                ofstream fout; // Create  an output file stream
+                fout.open(log_file.c_str()); // Open the file
+                
+
             default:
                 print_usage();
                 exit(0);
