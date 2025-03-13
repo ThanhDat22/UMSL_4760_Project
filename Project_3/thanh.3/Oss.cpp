@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
     int interval; // Interval to launch workers
 
     key_t key;
-    int msgid;
+    int msqid;
 
     // Generate key for the message queue
     if((key = ftok("Oss.cpp", 65)) == -1) {

@@ -19,6 +19,8 @@
 #include <getopt.h>      // For getopt()
 #include <cstring>       // For strcmp()
 #include <sys/msg.h>     // For message queue
+#include <cstdio>        // For perror()
+#include <fstream>       // For file I/O
 
 // Constants
 const int MAX_PCB = 20; // Maximum number of processes
