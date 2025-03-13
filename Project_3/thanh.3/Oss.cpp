@@ -7,7 +7,8 @@
 volatile sig_atomic_t timeout_flag = 0; // Flag to indicate timeout
 volatile sig_atomic_t timer_tick = 0; // Flag to indicate timer tick
 int msqid;
-
+msg_buffer buf; // Message buffer
+ofstream fout; // Log file
 PCB pcb[MAX_PCB]; // Array of PCB structures
 
 // Main function
@@ -416,6 +417,16 @@ bool launch_worker(Clock* clock, int time_upper_bound) {
              << " (Runtime: " << worker_seconds << " sec, " << worker_nanoseconds << " ns)" << endl;
         return true;
     }
+}
+
+/** @brief Converts an integer to a string.
+ *  @param num The integer to convert.
+ *  @return The string representation of the integer.
+ */
+string to_string(int num) {
+    ostringstream oss;
+    oss << num;
+    return oss.str();
 }
 
 

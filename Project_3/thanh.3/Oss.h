@@ -63,6 +63,8 @@ bool launch_worker(Clock*, int); // Launch a worker process
 void parse_arguments(int, char**, int&, int&, int&, int&, string &); // Parse command line arguments
 void setup_timer(int); // Setup the timer
 bool is_number(const char*); // Check if a string is a number
+void signal_handler(int); // Signal handler
+string to_string(int); // Convert an integer to a string
 
 
 
