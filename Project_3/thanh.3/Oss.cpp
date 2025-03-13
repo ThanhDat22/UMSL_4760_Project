@@ -6,7 +6,7 @@
 
 volatile sig_atomic_t timeout_flag = 0; // Flag to indicate timeout
 volatile sig_atomic_t timer_tick = 0; // Flag to indicate timer tick
-volatile int msqid;
+int msqid;
 
 PCB pcb[MAX_PCB]; // Array of PCB structures
 

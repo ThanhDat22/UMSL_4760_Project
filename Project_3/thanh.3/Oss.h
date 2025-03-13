@@ -68,32 +68,21 @@ bool is_number(const char*); // Check if a string is a number
 /** * @brief Signal handler for SIGALRM and SIGINT signals.
     * @param sig The signal number.
  */
-// void signal_handler(int sig) {
-//     if (sig == SIGALRM || sig == SIGINT) {
-//         timeout_flag = 1;
-//         for (int i = 0; i < MAX_PCB; i++) {
-//             if (pcb[i].occupied) {
-//                 kill(pcb[i].pid, SIGTERM);
-//                 waitpid(pcb[i].pid, NULL, 0);
-//             }
-//         }
-//         // Cleanup message queue
-//         if (msgctl(msqid, IPC_RMID, NULL) == -1) {
-//             perror("msgctl failed");
-//         }
-//         cout << "\nOSS: Program terminated due to timeout or signal." << endl;
-//         exit(0);
-//     }
-// }
-
-/** @brief Signal handler for SIGUSR1 signal.
- *  @param signum The signal number.
- */
 void signal_handler(int sig) {
-    if(sig == SIGALRM) {
-        timer_tick = 1;
-    } else if(sig == SIGTERM) {
+    if (sig == SIGALRM || sig == SIGINT) {
         timeout_flag = 1;
+        for (int i = 0; i < MAX_PCB; i++) {
+            if (pcb[i].occupied) {
+                kill(pcb[i].pid, SIGTERM);
+                waitpid(pcb[i].pid, NULL, 0);
+            }
+        }
+        // Cleanup message queue
+        if (msgctl(msqid, IPC_RMID, NULL) == -1) {
+            perror("msgctl failed");
+        }
+        cout << "\nOSS: Program terminated due to timeout or signal." << endl;
+        exit(0);
     }
 }
 
