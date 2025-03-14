@@ -37,6 +37,7 @@ clean:
 
 # Run the project
 run: all
+	touch logfile
 	./$(TARGET) -n 5 -s 2 -t 10 -i 500 -f logfile.txt
 
 # Avoid conflicts with files named 'clean' or 'run'

@@ -262,9 +262,13 @@ void parse_arguments(int argc, char** argv, int& num_workers, int& max_simul_wor
                 interval = atoi(optarg);
                 break;
             case 'f':
-                
+                log_file = optarg; // Get the log file name
                 fout.open(log_file.c_str()); // Open the file
-                
+                if(!fout) {
+                    cout << "Error opening log file" << endl;
+                    exit(1);
+                }
+                break;
 
             default:
                 print_usage();
