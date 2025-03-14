@@ -34,6 +34,8 @@ int main(int argc, char** argv) {
     if((msqid = msgget(key, 0666 | IPC_CREAT)) == -1) {
         perror("msgget");
         exit(1);
+    } else {
+        cout << "Message queue created with ID: " << msqid << endl;
     }
 
     // Parse command line arguments
@@ -180,14 +182,19 @@ int main(int argc, char** argv) {
  */
  void signal_handler(int sig) {
     if (sig == SIGALRM || sig == SIGINT) {
+        cout << "Caught signal: " << sig << endl;
         timeout_flag = 1;
         for (int i = 0; i < MAX_PCB; i++) {
             if (pcb[i].occupied) {
-                kill(pcb[i].pid, SIGTERM);
+                cout << "Killing PID: " << pcb[i].pid << endl;
+                if (kill(pcb[i].pid, SIGTERM) == -1) {
+                    perror("kill failed");
+                }
                 waitpid(pcb[i].pid, NULL, 0);
             }
         }
         // Cleanup message queue
+        cout << "Removing message queue with ID: " << msqid << endl;
         if (msgctl(msqid, IPC_RMID, NULL) == -1) {
             perror("msgctl failed");
         }
