@@ -14,6 +14,7 @@ WORKER_OBJS = Worker.o Shared_Clock.o
 
 # Build the project
 all: $(TARGET) $(WORKER)
+	touch logfile
 
 $(TARGET): $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) -lrt
