@@ -35,12 +35,12 @@ Shared_Clock.o: Shared_Clock.cpp Shared_Clock.h
 
 # Clean up generated files
 clean:
-	rm -f $(TARGET) $(WORKER) $(OBJS) $(WORKER_OBJS) *.txt *.o *.exe
+	rm -f $(TARGET) $(WORKER) $(OBJS) $(WORKER_OBJS) *.txt *.o *.exe logfile
 
 # Run the project
 run: all
 	touch logfile
-	./$(TARGET) -n 5 -s 2 -t 10 -i 500 -f logfile *.txt
+	./$(TARGET) -n 5 -s 2 -t 10 -i 500 -f 
 
 # Avoid conflicts with files named 'clean' or 'run'
 .PHONY: all clean run
