@@ -182,24 +182,33 @@ int main(int argc, char** argv) {
  */
  void signal_handler(int sig) {
     if (sig == SIGALRM || sig == SIGINT) {
-        cout << "Caught signal: " << sig << endl;
+        cout << "\nOSS: Caught signal: " << sig << endl;
         timeout_flag = 1;
+
+        // Kill all active worker processes
         for (int i = 0; i < MAX_PCB; i++) {
             if (pcb[i].occupied) {
-                cout << "Killing PID: " << pcb[i].pid << endl;
-                if (kill(pcb[i].pid, SIGTERM) == -1) {
-                    perror("kill failed");
-                }
-                waitpid(pcb[i].pid, NULL, 0);
+                cout << "OSS: Killing worker PID: " << pcb[i].pid << endl;
+                kill(pcb[i].pid, SIGTERM); // Send termination signal
+                waitpid(pcb[i].pid, NULL, 0); // Wait for the child to terminate
+                pcb[i].occupied = 0;
             }
         }
+
         // Cleanup message queue
-        cout << "Removing message queue with ID: " << msqid << endl;
         if (msgctl(msqid, IPC_RMID, NULL) == -1) {
             perror("msgctl failed");
+        } else {
+            cout << "Removing message queue with ID: " << msqid << endl;
         }
-        cout << "\nOSS: Program terminated due to timeout or signal." << endl;
-        exit(0);
+
+        // Log termination
+        cout << "OSS: Program terminated due to timeout or signal." << endl;
+        fout << "OSS: Program terminated due to timeout or signal." << endl;
+
+        fout.close(); // Close the log file
+
+        exit(EXIT_SUCCESS);
     }
 }
 
