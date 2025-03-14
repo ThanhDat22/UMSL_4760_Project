@@ -39,6 +39,14 @@ int main(int argc, char** argv) {
     // Parse command line arguments
     parse_arguments(argc, argv, num_workers, max_simul_workers, time_limit, interval, log_file);
 
+    // Debugging
+    std::cout << "Parsing arguments..." << std::endl;
+    std::cout << "argc = " << argc << std::endl;
+    for (int i = 0; i < argc; i++) {
+        std::cout << "argv[" << i << "] = " << argv[i] << std::endl;
+    }
+
+
     signal(SIGALRM, signal_handler); // Set up signal handler for SIGALRM
     signal(SIGTERM, signal_handler); // Set up signal handler for SIGTERM
     alarm(60); // Set up alarm for 60 seconds
