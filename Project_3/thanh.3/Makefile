@@ -15,6 +15,7 @@ WORKER_OBJS = Worker.o Shared_Clock.o
 # Build the project
 all: $(TARGET) $(WORKER)
 	touch logfile
+	chmod 666 logfile
 
 $(TARGET): $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) -lrt
@@ -39,7 +40,7 @@ clean:
 # Run the project
 run: all
 	touch logfile
-	./$(TARGET) -n 5 -s 2 -t 10 -i 500 -f logfile.txt
+	./$(TARGET) -n 5 -s 2 -t 10 -i 500 -f logfile *.txt
 
 # Avoid conflicts with files named 'clean' or 'run'
 .PHONY: all clean run

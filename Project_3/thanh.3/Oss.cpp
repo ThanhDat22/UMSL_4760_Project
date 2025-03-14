@@ -263,10 +263,12 @@ void parse_arguments(int argc, char** argv, int& num_workers, int& max_simul_wor
                 break;
             case 'f':
                 log_file = optarg; // Get the log file name
-                fout.open(log_file.c_str()); // Open the file
+                fout.open(log_file.c_str(), ios::out | ios::app); // Open the file
                 if(!fout) {
                     cout << "Error opening log file" << endl;
                     exit(1);
+                }else {
+                    cout << "Log file opened successfully: " << log_file << endl;
                 }
                 break;
 
@@ -301,7 +303,7 @@ void print_usage() {
     cout << "[-t timelimitForChildren] Indicates the maximum time limit in seconds for each worker process." << endl;
     cout << "[-i intervalInMsToLaunchChildren] Indicates the time interval in milliseconds to launch user processes." << endl;
     cout << "[-f logfile] Indicates the name of the log file." << endl;
-    cout << "Example: ./oss -n 5 -s 2 -t 20 -i 1000 -f log.txt" << endl;
+    cout << "Example: ./oss -n 5 -s 2 -t 20 -i 1000 -f logfile" << endl;
 }
 
 // Initialize the process table
