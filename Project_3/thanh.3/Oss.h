@@ -39,6 +39,8 @@ struct PCB {
     int messages_received;
     int total_runtime_sec;
     int total_runtime_ns;
+
+    int priority;
 };
 
 extern PCB pcb[MAX_PCB]; // Array of PCB structures
@@ -69,6 +71,10 @@ void log_worker_stats();
 void signal_handler(int); // Signal handler
 void kill_workers(); // Kill all worker processes
 void cleanup_and_exit(); // Clean up and exit the program
+void insert_into_priority_queue(int);
+int pop_from_priority_queue(); // Pop a worker from the priority queue
+int peek_priority_queue(); // Peek at the next worker in the priority queue
+
 
 
 

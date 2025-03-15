@@ -116,6 +116,17 @@ void run_worker(Clock* clock, int start_seconds, int start_nanoseconds, int term
         int current_seconds = clock->seconds;
         int current_nanoseconds = clock->nanoseconds;
 
+        // Send status message to OSS
+        Message msg;
+        msg.mtype = MSG_TYPE_FROM_WORKER;
+        msg.worker_id = getpid(); // Worker PID as ID
+        msg.command = 0;
+        msg.seconds = current_seconds;
+        msg.nanoseconds = current_nanoseconds;
+
+        if (msgsnd(msg_queue_id, &msg, sizeof(msg) - sizeof(long), 0) == -1) {
+            perror("WORKER: Failed to send message");
+        }
 
         // Check if the termination time has been reached
         if ((current_seconds > terminate_seconds) || 

@@ -6,16 +6,19 @@
 
 volatile sig_atomic_t timeout_flag = 0; // Flag to indicate timeout
 volatile sig_atomic_t timer_tick = 0; // Flag to indicate timer tick
-int msqid;
 msg_buffer buf; // Message buffer
 ofstream fout; // Log file
 string log_file = "logfile";
 PCB pcb[MAX_PCB]; // Array of PCB structures
 
+
 int scheduling_queue[MAX_PCB]; // Queue for scheduling workers
 int queue_size = 0; // Size of the scheduling queue
 int queue_front = 0; // Front of the queue
 int queue_rear = 0; // Rear of the queue
+
+int priority_queue[MAX_PCB]; // Queue for worker priorities
+int priority_queue_size = 0; // Size of the priority queue
 
 // Main function
 
@@ -29,15 +32,14 @@ int main(int argc, char** argv) {
     // Parse command line arguments
     parse_arguments(argc, argv, num_workers, max_simul_workers, time_limit, interval);
 
+    // Register signal handlers
     signal(SIGALRM, signal_handler); // Set up signal handler for SIGALRM
     signal(SIGTERM, signal_handler); // Set up signal handler for SIGTERM
+    signal(SIGINT, signal_handler); // Handle Ctrl + C
+
     alarm(60); // Set up alarm for 60 seconds
 
-    setup_timer(interval); // Set up the timer
-
-    srand(time(NULL)); // Seed the random number generator
-    init_process_table(); // Initialize the process table
-
+    // Initialize the shared clock
     Shared_Clock shared_clock(SHMKEY, true); // Create the shared clock
     Clock* clock = shared_clock.get_clock(); // Get the pointer to the shared clock structure
     if(clock == NULL) {
@@ -45,19 +47,29 @@ int main(int argc, char** argv) {
         exit(1);
     }
 
+    init_process_table(); // Initialize the process table
+    create_message_queue(); // Create the message queue
+
+    srand(time(NULL)); // Seed the random number generator
+
+
+    setup_timer(interval); // Set up the timer
+
     cout << "OSS: Starting OSS loop..." << endl;
 
     int workers_launched = 0; // Number of workers launched
     int last_print_sec = clock->seconds; // Last printed second
     int last_print_ns = clock->nanoseconds; // Last printed nanosecond
 
+    // Main loop
     while(true) {
         if(timer_tick) {
             timer_tick = 0; // Reset the timer tick flag
             increment_clock(clock, INCREMENT_NS); // Increment the clock
 
             if((clock->nanoseconds - last_print_ns) >= (500 * INCREMENT_NS) || (clock->seconds - last_print_sec) > 0) {
-                print_process_table(clock); // Print the process table
+                print_worker_stats(); 
+                log_worker_stats();
                 last_print_sec = clock->seconds; // Update the last printed second
                 last_print_ns = clock->nanoseconds; // Update the last printed nanosecond
             }
@@ -70,27 +82,26 @@ int main(int argc, char** argv) {
                 }
             }
 
+            // Schedule the next worker (priority-based)
+            if (priority_queue_size > 0) {
+                schedule_workers();
+            }
+
             if(workers_launched >= num_workers && count_running_workers() == 0) {
                 cout << "OSS: All workers finished. Exiting..." << endl;
                 break;
             }
 
-            if(timeout_flag) {
+            if (timeout_flag) {
                 cout << "OSS: Timeout reached. Terminating remaining workers..." << endl;
-                for(int i = 0; i < MAX_PCB; i++) {
-                    if(pcb[i].occupied) {
-                        kill(pcb[i].pid, SIGTERM);
-                        waitpid(pcb[i].pid, NULL, 0); // Wait for the worker to terminate
-                    }
-                }
+                kill_workers(); // Terminate all remaining workers
                 break;
-            } 
+            }
 
         }
     }
 
-    shared_clock.remove_segment(); // Remove the shared clock
-    cout << "OSS: All workers finished. Exiting OSS" << endl;
+    cleanup_and_exit(); // Clean up and exit the program
     return 0;
 
 }
@@ -339,8 +350,12 @@ bool launch_worker(Clock* clock, int time_upper_bound) {
         pcb[slot].total_runtime_sec = 0;
         pcb[slot].total_runtime_ns = 0;
 
+        pcb[slot].priority = rand() % 5 + 1;
+        insert_into_priority_queue(slot);
+
         cout << "OSS: Launched worker PID " << pid << " in slot " << slot 
-             << " (Runtime: " << worker_seconds << " sec, " << worker_nanoseconds << " ns)" << endl;
+             << " (Runtime: " << worker_seconds << " sec, " << worker_nanoseconds 
+             << " ns, Priority: " << pcb[slot].priority << ")" << endl;
         return true;
     }
 }
@@ -382,28 +397,31 @@ bool launch_worker(Clock* clock, int time_upper_bound) {
 
 //Schedules workers based on the scheduling queue.
 void schedule_workers() {
-    if (queue_size > 0) {
-        int worker_id = dequeue_worker(); // Dequeue the next worker
-        
-        // Send message to the next worker
-        send_message(worker_id, "1"); 
+    if (priority_queue_size > 0) {
+        int worker_id = peek_priority_queue();
 
-        // Wait for respone
+        // Send message to highest-priority worker
+        send_message(worker_id, 1);
+
+        // Wait for response
         receive_message();
 
-        // Rotate the queue after processing
-        int completed_worker = dequeue_worker();
-        enqueue_worker(completed_worker);
+        // After handling, reinsert into queue (if still running)
+        int completed_worker = pop_from_priority_queue();
+        if (pcb[completed_worker].occupied) {
+            insert_into_priority_queue(completed_worker);
+        }
     }
 }
 
 // Prints the statistics of all workers in the process table.
 void print_worker_stats() {
     cout << "\n=== Worker Stats ===\n";
-    cout << "ID\tMessages Sent\tMessages Received\tTotal Runtime (s.ns)\n";
+    cout << "ID\tPriority\tMessages Sent\tMessages Received\tTotal Runtime (s.ns)\n";
     for (int i = 0; i < MAX_PCB; i++) {
         if (pcb[i].occupied) {
-            cout << i << "\t"
+            std::cout << i << "\t"
+                      << pcb[i].priority << "\t\t"
                       << pcb[i].messages_sent << "\t\t"
                       << pcb[i].messages_received << "\t\t"
                       << pcb[i].total_runtime_sec << "."
@@ -415,24 +433,22 @@ void print_worker_stats() {
 
 void log_worker_stats() {
 
-    ofstream log(logfile.c_str(), std::ios::app);
+    ofstream log(log_file.c_str(), std::ios::app);
 
     if (log.is_open()) {
         log << "\n=== Worker Stats ===\n";
-        log << "ID\tMessages Sent\tMessages Received\tTotal Runtime (s.ns)\n";
+        log << "ID\tPriority\tMessages Sent\tMessages Received\tTotal Runtime (s.ns)\n";
         for (int i = 0; i < MAX_PCB; i++) {
             if (pcb[i].occupied) {
                 log << i << "\t"
+                    << pcb[i].priority << "\t\t"
                     << pcb[i].messages_sent << "\t\t"
                     << pcb[i].messages_received << "\t\t"
                     << pcb[i].total_runtime_sec << "."
                     << pcb[i].total_runtime_ns << "\n";
             }
         }
-        log << "====================\n";
         log.close();
-    } else {
-        cerr << "Error opening log file: " << logfile << endl;
     }
 }
 
@@ -445,7 +461,7 @@ void signal_handler(int sig) {
     } else if (sig == SIGTERM || sig == SIGINT) {
         cout << "\nOSS: Caught termination signal. Cleaning up...\n";
         cleanup_and_exit(); // Clean up and exit
-        exit(0)
+        exit(0);
     }
 }
 
@@ -471,3 +487,58 @@ void cleanup_and_exit() {
     log_worker_stats(); // Log final worker stats
     cout << "OSS: Cleaning up and exiting..." << endl;
 }
+
+// Insert a worker into the priority queue based on its priority
+void insert_into_priority_queue(int worker_id) {
+    if (priority_queue_size < MAX_QUEUE_SIZE) {
+        int i = priority_queue_size;
+
+        // Insert at the end and bubble up based on priority
+        while (i > 0 && pcb[priority_queue[(i - 1) / 2]].priority > pcb[worker_id].priority) {
+            priority_queue[i] = priority_queue[(i - 1) / 2];
+            i = (i - 1) / 2;
+        }
+
+        priority_queue[i] = worker_id;
+        priority_queue_size++;
+    }
+}
+
+// Pop the worker with the highest priority from the priority queue
+int pop_from_priority_queue() {
+    if (priority_queue_size == 0) {
+        return -1; // Queue is empty
+    }
+
+    int result = priority_queue[0];
+    priority_queue_size--;
+
+    // Restore heap order
+    int last = priority_queue[priority_queue_size];
+    int i = 0;
+    while (i * 2 + 1 < priority_queue_size) {
+        int child = i * 2 + 1;
+        if (child + 1 < priority_queue_size && 
+            pcb[priority_queue[child + 1]].priority < pcb[priority_queue[child]].priority) {
+            child++;
+        }
+        if (pcb[last].priority <= pcb[priority_queue[child]].priority) {
+            break;
+        }
+        priority_queue[i] = priority_queue[child];
+        i = child;
+    }
+
+    priority_queue[i] = last;
+    return result;
+}
+
+// Peek at the worker with the highest priority in the priority queue without removing it
+int peek_priority_queue() {
+    if (priority_queue_size == 0) {
+        return -1;
+    }
+    return priority_queue[0];
+}
+
+
