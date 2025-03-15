@@ -1,6 +1,14 @@
 # **Introducing Clock and Process Table**
 
 ## **Description**
+- The project simulates an Operating System (OSS) that manages multiple user processes:
+    1. Launch user processes.
+    2. Executes them.
+    3. Waits for them to complete.
+- The number of process and their simultaneous execution are controlled via command line.
+- Asimulated system clock placed in shared memory.
+- A process control block table tracking child processes.i
+
 
 ## **Compilation**
 
@@ -33,10 +41,6 @@ Example:
 . -i 100: a new worker process is launched every 100 milliseconds.
 ```
 
-Program output example:
-
-## **Special Considerations**
-
 ### Help Option
 
 To display usage instruction, type in command line -h any where after ./oss:
@@ -59,6 +63,8 @@ To delete compile files, type in command line:
 make clean
 ```
 
+## Special Considerations
+
 ### What was done
 
 1. Implemented process management using shared memory and a simulated clock to synchronize worker processes without
@@ -76,3 +82,4 @@ race conditions.
 - Output is only displayed in the terminal: A possible improvement is writing logs to an output file for easier debugging.
 - Signal handling could be enhanced: While OSS detects terminated worker processes, unexpected worker crashes are not explicitly handled.
 - Remove OOP due to small project.
+

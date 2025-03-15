@@ -9,7 +9,13 @@ volatile sig_atomic_t timer_tick = 0; // Flag to indicate timer tick
 int msqid;
 msg_buffer buf; // Message buffer
 ofstream fout; // Log file
+string log_file = "logfile";
 PCB pcb[MAX_PCB]; // Array of PCB structures
+
+int scheduling_queue[MAX_PCB]; // Queue for scheduling workers
+int queue_size = 0; // Size of the scheduling queue
+int queue_front = 0; // Front of the queue
+int queue_rear = 0; // Rear of the queue
 
 // Main function
 
@@ -19,35 +25,9 @@ int main(int argc, char** argv) {
     int max_simul_workers; // Maximum number of simultaneous workers
     int time_limit; // Time limit for each worker
     int interval; // Interval to launch workers
-    string log_file; // Log file name
-
-    key_t key;
-    
-
-    // Generate key for the message queue
-    if((key = ftok("Oss.cpp", 65)) == -1) {
-        perror("ftok");
-        exit(1);
-    }
-
-    // Create the message queue
-    if((msqid = msgget(key, 0666 | IPC_CREAT)) == -1) {
-        perror("msgget");
-        exit(1);
-    } else {
-        cout << "Message queue created with ID: " << msqid << endl;
-    }
 
     // Parse command line arguments
-    parse_arguments(argc, argv, num_workers, max_simul_workers, time_limit, interval, log_file);
-
-    // Debugging
-    std::cout << "Parsing arguments..." << std::endl;
-    std::cout << "argc = " << argc << std::endl;
-    for (int i = 0; i < argc; i++) {
-        std::cout << "argv[" << i << "] = " << argv[i] << std::endl;
-    }
-
+    parse_arguments(argc, argv, num_workers, max_simul_workers, time_limit, interval);
 
     signal(SIGALRM, signal_handler); // Set up signal handler for SIGALRM
     signal(SIGTERM, signal_handler); // Set up signal handler for SIGTERM
@@ -65,82 +45,28 @@ int main(int argc, char** argv) {
         exit(1);
     }
 
+    cout << "OSS: Starting OSS loop..." << endl;
+
     int workers_launched = 0; // Number of workers launched
+    int last_print_sec = clock->seconds; // Last printed second
+    int last_print_ns = clock->nanoseconds; // Last printed nanosecond
 
     while(true) {
         if(timer_tick) {
             timer_tick = 0; // Reset the timer tick flag
-            
-            // Increment clock based on number of running workers
-            int running_children = count_running_workers();
-            int increment_ns = (running_children > 0) 
-                                ? (250 * 1000000) / running_children 
-                                : (250 * 1000000);
+            increment_clock(clock, INCREMENT_NS); // Increment the clock
 
-            increment_clock(clock, increment_ns);
+            if((clock->nanoseconds - last_print_ns) >= (500 * INCREMENT_NS) || (clock->seconds - last_print_sec) > 0) {
+                print_process_table(clock); // Print the process table
+                last_print_sec = clock->seconds; // Update the last printed second
+                last_print_ns = clock->nanoseconds; // Update the last printed nanosecond
+            }
 
             check_terminated_workers(); // Check for terminated workers
 
             if(workers_launched < num_workers && count_running_workers() < max_simul_workers) {
                 if(launch_worker(clock, time_limit)) {
                     workers_launched++; // Increment the number of workers launched
-                }
-            }
-
-            for (int i = 0; i < MAX_PCB; i++) {
-                if (pcb[i].occupied) {
-                    buf.mtype = pcb[i].pid;
-                    strcpy(buf.str_data, "Message from OSS");
-                    buf.int_data = rand() % 100;
-
-                    fout << "OSS: Sending message to worker " << i 
-                        << " PID " << pcb[i].pid 
-                        << " at time " << clock->seconds 
-                        << ":" << clock->nanoseconds << endl;
-
-                    cout << "OSS: Sending message to worker " << i 
-                        << " PID " << pcb[i].pid 
-                        << " at time " << clock->seconds 
-                        << ":" << clock->nanoseconds << endl;
-
-
-                    msg_buffer buf;
-                    if (msgrcv(msqid, &buf, sizeof(buf) - sizeof(long), pcb[i].pid, 0) == -1) {
-                        perror("msgrcv");
-                    } else {
-                        
-                        cout << "OSS: Received message from worker " << i 
-                            << " PID " << pcb[i].pid 
-                            << " at time " << clock->seconds 
-                            << ":" << clock->nanoseconds << endl;
-                        fout << "OSS: Received message from worker " << i 
-                            << " PID " << pcb[i].pid 
-                            << " at time " << clock->seconds 
-                            << ":" << clock->nanoseconds << endl;    
-
-
-                        pcb[i].message_sent++;
-                        if (buf.int_data == 0) {
-                            
-                            cout << "OSS: Worker " << i 
-                                << " PID " << pcb[i].pid 
-                                << " is planning to terminate." << endl;
-
-                            fout << "OSS: Worker " << i
-                                << " PID " << pcb[i].pid
-                                << " is planning to terminate." << endl;
-    
-                            waitpid(pcb[i].pid, NULL, 0); // Wait for the worker to terminate
-    
-                            pcb[i].occupied = 0;
-                            pcb[i].pid = 0;
-                            pcb[i].start_seconds = 0;
-                            pcb[i].start_nanoseconds = 0;
-                            pcb[i].message_sent = 0;
-                        }
-                    }
-
-                    
                 }
             }
 
@@ -163,52 +89,23 @@ int main(int argc, char** argv) {
         }
     }
 
-    // Cleanup
-    shared_clock.remove_segment();
-    if (msgctl(msqid, IPC_RMID, NULL) == -1) {
-        perror("msgctl");
-    }
-
-    // Close the log file
-    fout.close();
+    shared_clock.remove_segment(); // Remove the shared clock
+    cout << "OSS: All workers finished. Exiting OSS" << endl;
     return 0;
 
 }
 
+
 // Function definitions
 
-/** * @brief Signal handler for SIGALRM and SIGINT signals.
-    * @param sig The signal number.
+/** @brief Signal handler for SIGUSR1 signal.
+ *  @param signum The signal number.
  */
  void signal_handler(int sig) {
-    if (sig == SIGALRM || sig == SIGINT) {
-        cout << "\nOSS: Caught signal: " << sig << endl;
+    if(sig == SIGALRM) {
+        timer_tick = 1;
+    } else if(sig == SIGTERM) {
         timeout_flag = 1;
-
-        // Kill all active worker processes
-        for (int i = 0; i < MAX_PCB; i++) {
-            if (pcb[i].occupied) {
-                cout << "OSS: Killing worker PID: " << pcb[i].pid << endl;
-                kill(pcb[i].pid, SIGTERM); // Send termination signal
-                waitpid(pcb[i].pid, NULL, 0); // Wait for the child to terminate
-                pcb[i].occupied = 0;
-            }
-        }
-
-        // Cleanup message queue
-        if (msgctl(msqid, IPC_RMID, NULL) == -1) {
-            perror("msgctl failed");
-        } else {
-            cout << "Removing message queue with ID: " << msqid << endl;
-        }
-
-        // Log termination
-        cout << "OSS: Program terminated due to timeout or signal." << endl;
-        fout << "OSS: Program terminated due to timeout or signal." << endl;
-
-        fout.close(); // Close the log file
-
-        exit(EXIT_SUCCESS);
     }
 }
 
@@ -231,7 +128,7 @@ void setup_timer(int interval_ms) {
  *  @param time_limit The maximum time limit in seconds for each worker process.
  *  @param interval The time interval in milliseconds to launch user processes.
  */
-void parse_arguments(int argc, char** argv, int& num_workers, int& max_simul_workers, int& time_limit, int& interval, string &log_file) {
+void parse_arguments(int argc, char** argv, int& num_workers, int& max_simul_workers, int& time_limit, int& interval) {
     int options;
     num_workers = 0;
     max_simul_workers = 0;
@@ -246,8 +143,7 @@ void parse_arguments(int argc, char** argv, int& num_workers, int& max_simul_wor
         }
     }
 
-    ofstream fout;
-    while((options = getopt(argc, argv, "hn:s:t:i:f:")) != -1) {
+    while((options = getopt(argc, argv, "hn:s:t:i:")) != -1) {
         switch(options) {
             case 'n':              
                 if(!is_number(optarg)) {
@@ -277,17 +173,6 @@ void parse_arguments(int argc, char** argv, int& num_workers, int& max_simul_wor
                 }
                 interval = atoi(optarg);
                 break;
-            case 'f':
-                log_file = optarg; // Get the log file name
-                fout.open(log_file.c_str(), ios::out | ios::app); // Open the file
-                if(!fout) {
-                    cout << "Error opening log file" << endl;
-                    exit(1);
-                }else {
-                    cout << "Log file opened successfully: " << log_file << endl;
-                }
-                break;
-
             default:
                 print_usage();
                 exit(0);
@@ -312,14 +197,12 @@ bool is_number(const char *str) {
 
 // Print usage information
 void print_usage() {
-    cout << "Usage: ./oss [-h] [-n proc] [-s simul] [-t timelimitForChildren] [-i intervalInMsToLaunchChildren] [-f logfile]" << endl;
+    cout << "Usage: ./oss [-h] [-n proc] [-s simul] [-t timelimitForChildren] [-i intervalInMsToLaunchChildren]" << endl;
     cout << "[-h] Display this help message." << endl;
     cout << "[-n proc] Stands for the number of worker processes to launch." << endl;
     cout << "[-s simul] Indicates the maximum number of worker processes to allow to run simultaneously." << endl;
     cout << "[-t timelimitForChildren] Indicates the maximum time limit in seconds for each worker process." << endl;
     cout << "[-i intervalInMsToLaunchChildren] Indicates the time interval in milliseconds to launch user processes." << endl;
-    cout << "[-f logfile] Indicates the name of the log file." << endl;
-    cout << "Example: ./oss -n 5 -s 2 -t 20 -i 1000 -f logfile" << endl;
 }
 
 // Initialize the process table
@@ -329,7 +212,6 @@ void init_process_table() {
         pcb[i].pid = 0;
         pcb[i].start_seconds = 0;
         pcb[i].start_nanoseconds = 0;
-        pcb[i].message_sent = 0;
     }
 }
 
@@ -339,13 +221,12 @@ void print_process_table(Clock* clock) {
          << " SysClockS:" << clock->seconds
          << " SysClockNano:" << clock->nanoseconds << endl;
     cout << "Process Table:" << endl;
-    cout << "Entry\tOccupied\tPID\tStartS\tStartN\tMessagesSent" << endl;
+    cout << "Entry\tOccupied\tPID\tStartS\tStartN" << endl;
     for (int i = 0; i < MAX_PCB; i++) {
         cout << i << "\t" <<pcb[i].occupied << "\t\t" 
              << pcb[i].pid << "\t" 
              << pcb[i].start_seconds << "\t" 
-             << pcb[i].start_nanoseconds << "\t"
-             << pcb[i].message_sent << endl;
+             << pcb[i].start_nanoseconds << endl;
     }
 }
 
@@ -400,6 +281,15 @@ int count_running_workers() {
     return count;
 }
 
+/** @brief Converts an integer to a string.
+ *  @param num The integer to convert.
+ *  @return The string representation of the integer.
+ */
+// string to_string(const int num) {
+//     ostringstream oss;
+//     oss << num;
+//     return oss.str();
+// }
 
 /** @brief Launches a worker process.
  *  @param clock Pointer to the shared clock structure.
@@ -443,21 +333,141 @@ bool launch_worker(Clock* clock, int time_upper_bound) {
         pcb[slot].pid = pid;
         pcb[slot].start_seconds = clock->seconds;
         pcb[slot].start_nanoseconds = clock->nanoseconds;
+
+        pcb[slot].messages_sent = 0;
+        pcb[slot].messages_received = 0;
+        pcb[slot].total_runtime_sec = 0;
+        pcb[slot].total_runtime_ns = 0;
+
         cout << "OSS: Launched worker PID " << pid << " in slot " << slot 
              << " (Runtime: " << worker_seconds << " sec, " << worker_nanoseconds << " ns)" << endl;
         return true;
     }
 }
 
-/** @brief Converts an integer to a string.
- *  @param num The integer to convert.
- *  @return The string representation of the integer.
+/** @brief Enqueues a worker process to the process table.
+ *  @param pid The PID of the worker process to enqueue.
  */
-string to_string(int num) {
-    ostringstream oss;
-    oss << num;
-    return oss.str();
+ void enqueue_worker(int worker_id) {
+    if (queue_size < MAX_PCB) {
+        scheduling_queue[queue_rear] = worker_id;
+        queue_rear = (queue_rear + 1) % MAX_PCB; // Circular increment
+        queue_size++;
+        cout << "OSS: Enqueued worker PID " << worker_id << " to the scheduling queue." << endl;
+    }
+ }
+
+// @brief Dequeues a worker process from the scheduling queue.
+ int dequeue_worker() {
+    if (queue_size > 0) {
+        int worker_id = scheduling_queue[queue_front];
+        queue_front = (queue_front + 1) % MAX_PCB; // Circular increment
+        queue_size--;
+        return worker_id;
+    } else {
+        return -1; // Queue is empty
+    }
+ }
+
+/** @brief Peeks at the next worker in the scheduling queue without removing it.
+ *  @return The PID of the next worker in the queue, or -1 if the queue is empty.
+ */
+ int peek_worker() {
+    if (queue_size > 0) {
+        return scheduling_queue[queue_front]; // Return the next worker's PID
+    } else {
+        return -1; // Queue is empty
+    }
+ }
+
+//Schedules workers based on the scheduling queue.
+void schedule_workers() {
+    if (queue_size > 0) {
+        int worker_id = dequeue_worker(); // Dequeue the next worker
+        
+        // Send message to the next worker
+        send_message(worker_id, "1"); 
+
+        // Wait for respone
+        receive_message();
+
+        // Rotate the queue after processing
+        int completed_worker = dequeue_worker();
+        enqueue_worker(completed_worker);
+    }
 }
 
+// Prints the statistics of all workers in the process table.
+void print_worker_stats() {
+    cout << "\n=== Worker Stats ===\n";
+    cout << "ID\tMessages Sent\tMessages Received\tTotal Runtime (s.ns)\n";
+    for (int i = 0; i < MAX_PCB; i++) {
+        if (pcb[i].occupied) {
+            cout << i << "\t"
+                      << pcb[i].messages_sent << "\t\t"
+                      << pcb[i].messages_received << "\t\t"
+                      << pcb[i].total_runtime_sec << "."
+                      << pcb[i].total_runtime_ns << "\n";
+        }
+    }
+    cout << "====================\n";
+}
 
+void log_worker_stats() {
 
+    ofstream log(logfile.c_str(), std::ios::app);
+
+    if (log.is_open()) {
+        log << "\n=== Worker Stats ===\n";
+        log << "ID\tMessages Sent\tMessages Received\tTotal Runtime (s.ns)\n";
+        for (int i = 0; i < MAX_PCB; i++) {
+            if (pcb[i].occupied) {
+                log << i << "\t"
+                    << pcb[i].messages_sent << "\t\t"
+                    << pcb[i].messages_received << "\t\t"
+                    << pcb[i].total_runtime_sec << "."
+                    << pcb[i].total_runtime_ns << "\n";
+            }
+        }
+        log << "====================\n";
+        log.close();
+    } else {
+        cerr << "Error opening log file: " << logfile << endl;
+    }
+}
+
+/** @brief Signal handler for SIGALRM and SIGTERM signals.
+ *  @param sig The signal number.
+ */
+void signal_handler(int sig) {
+    if (sig == SIGALRM) {
+        timer_tick = 1; // Set the timer tick flag
+    } else if (sig == SIGTERM || sig == SIGINT) {
+        cout << "\nOSS: Caught termination signal. Cleaning up...\n";
+        cleanup_and_exit(); // Clean up and exit
+        exit(0)
+    }
+}
+
+// End worker processes
+void kill_workers() {
+    for (int i = 0; i < MAX_PCB; i++) {
+        if (pcb[i].occupied) {
+            cout << "OSS: Killing worker PID " << pcb[i].pid << endl;
+            kill(pcb[i].pid, SIGTERM);
+            waitpid(pcb[i].pid, NULL, 0); // Clean up zombie processes
+            pcb[i].occupied = 0;
+        }
+    }
+}
+
+// Clean up and exit the program
+void cleanup_and_exit() {
+    cout << "OSS: Cleaning up..." << endl;
+    kill_workers();
+    shared_clock.remove_segment(); // Remove the shared clock
+    cleanup_message_queue(); // Clean up the message queue
+    print_worker_stats(); // Print final worker stats
+    log_worker_stats(); // Log final worker stats
+    cout << "OSS: Cleaning up and exiting..." << endl;
+}

@@ -25,27 +25,19 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    key_t key = ftok("oss.cpp", 65);
-    int msqid = msgget(key, 0644);
+    int start_seconds, start_nanoseconds, termination_seconds, termination_nanoseconds;
+    compute_termination_time(clock, max_seconds, max_nanoseconds, start_seconds, start_nanoseconds, termination_seconds, termination_nanoseconds);
 
-    msg_buffer buf; // Message buffer
+    // Print starting message
+    starting_message(start_seconds, start_nanoseconds, termination_seconds, termination_nanoseconds);
 
-    if (msgrcv(msqid, &buf, sizeof(buf) - sizeof(long), getpid(), 0) != -1) {
-        cout << "Worker received: " << buf.str_data << ", Data: " << buf.int_data << endl;
-
-        buf.mtype = getppid();
-        strcpy(buf.str_data, "Worker done");
-        buf.int_data = 0;
-
-        if (msgsnd(msqid, &buf, sizeof(buf) - sizeof(long), 0) == -1) {
-            perror("msgsnd");
-        }
-    }
+    // Run the busy-waiting loop
+    run_worker(clock, start_seconds, start_nanoseconds, termination_seconds, termination_nanoseconds);
 
     return 0;
 
-}
 
+}
 
 // Function definitions
 
@@ -144,4 +136,3 @@ void run_worker(Clock* clock, int start_seconds, int start_nanoseconds, int term
 void wake_signal_handler(int signum) {
     return; // Do nothing
 }
-
