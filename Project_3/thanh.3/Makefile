@@ -4,45 +4,46 @@
 
 # Compiler and flags
 CXX = g++
-CXXFLAGS = -Wall -std=c++98 -g
+CXXFLAGS = -Wall -g
 
 # Targets and sources
 TARGET = oss
 WORKER = worker
-OBJS = Oss.o Shared_Clock.o
-WORKER_OBJS = Worker.o Shared_Clock.o
+
+# Object files
+OSS_OBJ = $(OSS_SRC:.cpp=.o)
+WORKER_OBJ = $(WORKER_SRC:.cpp=.o)
 
 # Build the project
-all: $(TARGET) $(WORKER)
+all: $(OSS) $(WORKER)
 	touch logfile
 	chmod 666 logfile
 
-$(TARGET): $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) -lrt
+# Build OSS
+$(OSS): $(OSS_OBJ)
+	$(CC) $(CFLAGS) -o $(OSS) $(OSS_OBJ)
 
-$(WORKER): $(WORKER_OBJS)
-	$(CXX) $(CXXFLAGS) -o $(WORKER) $(WORKER_OBJS) -lrt
+# Build Worker
+$(WORKER): $(WORKER_OBJ)
+	$(CC) $(CFLAGS) -o $(WORKER) $(WORKER_OBJ)
 
-# Compile object files
-Oss.o: Oss.cpp Oss.h Shared_Clock.h
-	$(CXX) $(CXXFLAGS) -c Oss.cpp
+# Compile source files to object files
+%.o: %.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
 
-Worker.o: Worker.cpp Worker.h Shared_Clock.h
-	$(CXX) $(CXXFLAGS) -c Worker.cpp
-
-Shared_Clock.o: Shared_Clock.cpp Shared_Clock.h
-	$(CXX) $(CXXFLAGS) -c Shared_Clock.cpp
-
-# Clean up generated files
+# Clean object files and executables
 clean:
-	rm -f $(TARGET) $(WORKER) $(OBJS) $(WORKER_OBJS) *.txt *.o *.exe logfile
+	rm -f $(OSS_OBJ) $(WORKER_OBJ) $(OSS) $(WORKER)
 
-# Run the project
-run: all
-	touch logfile
-	./$(TARGET) -n 5 -s 2 -t 10 -i 500 -f 
+# Run OSS with example parameters
+run:
+	./oss -n 5 -s 3 -t 10 -i 100 -f logfile.txt
 
 # Avoid conflicts with files named 'clean' or 'run'
 .PHONY: all clean run
 
-
+# Dependencies
+Oss.o: Oss.h Shared_Clock.h Message.h
+Worker.o: Worker.h Shared_Clock.h Message.h
+Shared_Clock.o: Shared_Clock.h
+Message.o: Message.h
