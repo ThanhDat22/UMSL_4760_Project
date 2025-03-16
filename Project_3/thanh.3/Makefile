@@ -4,7 +4,7 @@
 
 # Compiler and flags
 CXX = g++
-CXXFLAGS = -Wall -g
+CXXFLAGS = -Wall -g -fpack-struct=1
 
 # Source files
 OSS_SRC = Oss.cpp Shared_Clock.cpp Message.cpp
