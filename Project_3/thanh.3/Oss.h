@@ -43,8 +43,6 @@ struct PCB {
     int priority;
 };
 
-extern PCB pcb[MAX_PCB]; // Array of PCB structures
-
 // Global variables declaration
 extern volatile sig_atomic_t timeout_flag;
 extern volatile sig_atomic_t timer_tick;
