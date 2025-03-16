@@ -17,6 +17,7 @@ using namespace std;
 #define MSG_TYPE_FROM_WORKER 2 // Message type for OSS to receive from worker processes
 
 // Define the message structure
+#pragma pack(push, 1) // Ensure proper packing of the structure
 struct Message {
     long mtype; // Message type
     int worker_id; // Worker ID
