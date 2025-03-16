@@ -28,8 +28,8 @@ $(OSS): $(OSS_OBJ)
 	$(CXX) $(CXXFLAGS) -o $(OSS) $(OSS_OBJ)
 
 # Build Worker
-$(WORKER): $(WORKER_OBJ)
-	$(CXX) $(CXXFLAGS) -o $(WORKER) $(WORKER_OBJ)
+$(WORKER): $(WORKER_OBJ) Oss.o
+	$(CXX) $(CXXFLAGS) -o $(WORKER) $(WORKER_OBJ) Oss.o
 
 # Compile source files to object files
 %.o: %.cpp
