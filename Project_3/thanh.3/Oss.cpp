@@ -107,18 +107,6 @@ int main(int argc, char** argv) {
 
 // Function definitions
 
-/** @brief Signal handler for SIGUSR1 signal.
- *  @param signum The signal number.
- */
- void signal_handler(int sig) {
-    if (sig == SIGALRM || sig == SIGINT) {
-        cout << "\nOSS: Terminating remaining workers...\n";
-        kill_workers(); // Clean up workers
-        cleanup_and_exit();
-        exit(0);
-    }
-}
-
 /** @brief Sets up a timer to send SIGALRM signal at specified intervals.
  *  @param interval_ms The time interval in milliseconds.
  */
@@ -480,7 +468,7 @@ void cleanup_and_exit() {
 
 // Insert a worker into the priority queue based on its priority
 void insert_into_priority_queue(int worker_id) {
-    if (priority_queue_size < MAX_QUEUE_SIZE) {
+    if (priority_queue_size < MAX_PCB) {
         int i = priority_queue_size;
 
         // Insert at the end and bubble up based on priority
