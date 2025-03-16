@@ -25,15 +25,15 @@ all: $(OSS) $(WORKER)
 
 # Build OSS
 $(OSS): $(OSS_OBJ)
-	$(CC) $(CFLAGS) -o $(OSS) $(OSS_OBJ)
+	$(CXX) $(CXXFLAGS) -o $(OSS) $(OSS_OBJ)
 
 # Build Worker
 $(WORKER): $(WORKER_OBJ)
-	$(CC) $(CFLAGS) -o $(WORKER) $(WORKER_OBJ)
+	$(CXX) $(CXXFLAGS) -o $(WORKER) $(WORKER_OBJ)
 
 # Compile source files to object files
 %.o: %.cpp
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Clean object files and executables
 clean:
