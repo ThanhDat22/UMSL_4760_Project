@@ -15,6 +15,7 @@ int main(int argc, char** argv) {
 
     int max_seconds = 0;
     int max_nanoseconds = 0;
+    int iterations = 0; // Counter for iterations
     parse_arguments(argc, argv, max_seconds, max_nanoseconds);
 
     // Attach to the shared clock
