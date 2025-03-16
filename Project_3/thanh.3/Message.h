@@ -23,6 +23,7 @@ struct Message {
     int seconds; // Current seconds from the worker
     int nanoseconds; // Current nanoseconds from the worker
 };
+#pragma pack(pop) // Ensure proper packing of the structure
 
 extern int msg_queue_id; // Message queue ID
 
