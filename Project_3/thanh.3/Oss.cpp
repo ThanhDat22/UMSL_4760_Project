@@ -21,6 +21,7 @@ int queue_rear = 0; // Rear of the queue
 
 int priority_queue[MAX_PCB]; // Queue for worker priorities
 int priority_queue_size = 0; // Size of the priority queue
+Shared_Clock shared_clock(SHMKEY, true);
 
 // Main function
 
@@ -99,7 +100,7 @@ int main(int argc, char** argv) {
         }
     }
 
-    cleanup_and_exit(shared_clock); // Clean up and exit the program
+    cleanup_and_exit(); // Clean up and exit the program
     return 0;
 
 }
@@ -438,7 +439,7 @@ void signal_handler(int sig) {
         timer_tick = 1; // Set the timer tick flag
     } else if (sig == SIGTERM || sig == SIGINT) {
         cout << "\nOSS: Caught termination signal. Cleaning up...\n";
-        cleanup_and_exit(shared_clock); // Clean up and exit
+        cleanup_and_exit(); // Clean up and exit
         exit(0);
     }
 }
@@ -456,7 +457,7 @@ void kill_workers() {
 }
 
 // Clean up and exit the program
-void cleanup_and_exit(Shared_Clock & shared_clock) {
+void cleanup_and_exit() {
     cout << "OSS: Cleaning up..." << endl;
     kill_workers();
     shared_clock.remove_segment(); // Remove the shared clock
