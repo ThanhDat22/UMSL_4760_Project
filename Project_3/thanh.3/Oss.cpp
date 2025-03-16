@@ -6,13 +6,12 @@
 
 volatile sig_atomic_t timeout_flag = 0; // Flag to indicate timeout
 volatile sig_atomic_t timer_tick = 0; // Flag to indicate timer tick
-msg_buffer buf; // Message buffer
+Message buf; // Message buffer
 ofstream fout; // Log file
 string log_file = "logfile";
 PCB pcb[MAX_PCB]; // Array of PCB structures
 
 int next_worker_index = 0;
-bool timeout_flag = false;
 
 int scheduling_queue[MAX_PCB]; // Queue for scheduling workers
 int queue_size = 0; // Size of the scheduling queue
@@ -280,7 +279,7 @@ int count_running_workers() {
  *  @param num The integer to convert.
  *  @return The string representation of the integer.
  */
-string to_string(const int num) {
+string int_to_string(const int num) {
     ostringstream oss;
     oss << num;
     return oss.str();
@@ -317,8 +316,8 @@ bool launch_worker(Clock* clock, int time_upper_bound) {
     } else if (pid == 0) { // Child process: execute worker
         
         // Convert seconds and nanoseconds to strings
-        string sec_str = to_string(worker_seconds);
-        string nano_str = to_string(worker_nanoseconds);
+        string sec_str = int_to_string(worker_seconds);
+        string nano_str = int_to_string(worker_nanoseconds);
         // Execute the worker program with the arguments
         execlp("./worker", "./worker", sec_str.c_str(), nano_str.c_str(), (char*)NULL);
         cerr << "Exec failed" << endl;

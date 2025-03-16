@@ -57,7 +57,7 @@ void print_process_table(Clock*); // Print the process table
 void increment_clock(Clock*, int); // Increment the clock
 void check_terminated_workers(); // Check for terminated workers
 int count_running_workers(); // Count the number of running workers
-string to_string(const int); // Convert an integer to a string
+string int_to_string(const int); // Convert an integer to a string
 bool launch_worker(Clock*, int); // Launch a worker process
 void parse_arguments(int, char**, int&, int&, int&, int&); // Parse command line arguments
 void setup_timer(int); // Setup the timer
