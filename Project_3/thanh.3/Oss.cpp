@@ -99,7 +99,7 @@ int main(int argc, char** argv) {
         }
     }
 
-    cleanup_and_exit(); // Clean up and exit the program
+    cleanup_and_exit(shared_clock); // Clean up and exit the program
     return 0;
 
 }
@@ -279,11 +279,11 @@ int count_running_workers() {
  *  @param num The integer to convert.
  *  @return The string representation of the integer.
  */
-// string to_string(const int num) {
-//     ostringstream oss;
-//     oss << num;
-//     return oss.str();
-// }
+string to_string(const int num) {
+    ostringstream oss;
+    oss << num;
+    return oss.str();
+}
 
 /** @brief Launches a worker process.
  *  @param clock Pointer to the shared clock structure.
@@ -438,7 +438,7 @@ void signal_handler(int sig) {
         timer_tick = 1; // Set the timer tick flag
     } else if (sig == SIGTERM || sig == SIGINT) {
         cout << "\nOSS: Caught termination signal. Cleaning up...\n";
-        cleanup_and_exit(); // Clean up and exit
+        cleanup_and_exit(shared_clock); // Clean up and exit
         exit(0);
     }
 }
@@ -456,7 +456,7 @@ void kill_workers() {
 }
 
 // Clean up and exit the program
-void cleanup_and_exit() {
+void cleanup_and_exit(Shared_Clock & shared_clock) {
     cout << "OSS: Cleaning up..." << endl;
     kill_workers();
     shared_clock.remove_segment(); // Remove the shared clock
