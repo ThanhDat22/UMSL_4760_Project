@@ -26,8 +26,8 @@ void receive_message() {
 
         pcb[msg.worker_id].messages_received++; // Increment the received message count for the worker
 
-        int elapsed_seconds = msg.clock_seconds - pcb[msg.worker_id].start_seconds;
-        int elapsed_nanoseconds = msg.clock_nanoseconds - pcb[msg.worker_id].start_nanoseconds;
+        int elapsed_seconds = msg.seconds - pcb[msg.worker_id].start_seconds;
+        int elapsed_nanoseconds = msg.nanoseconds - pcb[msg.worker_id].start_nanoseconds;
 
         // Handle overflow of nanoseconds
         if (elapsed_nanoseconds < 0) {
@@ -47,8 +47,8 @@ void send_message(int worker_id, int command) {
     msg.worker_id = worker_id;
     msg.command = command;
 
-    msg.clock_seconds = 0;
-    msg.clock_nanoseconds = 0;
+    msg.seconds = 0;
+    msg.nanoseconds = 0;
 
     if (msgsnd(msg_queue_id, &msg, sizeof(Message) - sizeof(long), 0) == -1) {
         perror("msgsnd failed");
