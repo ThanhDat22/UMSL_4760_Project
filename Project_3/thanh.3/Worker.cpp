@@ -25,15 +25,42 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    int start_seconds, start_nanoseconds, termination_seconds, termination_nanoseconds;
-    compute_termination_time(clock, max_seconds, max_nanoseconds, start_seconds, start_nanoseconds, termination_seconds, termination_nanoseconds);
+    struct sigaction sa;
+    sa.sa_handler = signal_handler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+    sigaction(SIGUSR1, &sa, NULL);
 
-    // Print starting message
-    starting_message(start_seconds, start_nanoseconds, termination_seconds, termination_nanoseconds);
+    int terminate_seconds = clock->seconds + max_seconds;
+    int terminate_nanoseconds = clock->nanoseconds + max_nanoseconds;
+    if (terminate_nanoseconds >= ONE_BILLION) {
+        terminate_seconds++;
+        terminate_nanoseconds -= ONE_BILLION;
+    }
 
-    // Run the busy-waiting loop
-    run_worker(clock, start_seconds, start_nanoseconds, termination_seconds, termination_nanoseconds);
+    cout << "WORKER: Starting with PID: " << getpid() << endl;
 
+    while (true) {
+        pause();
+
+        cout << "WORKER: PID " << getpid() << " Iteration " << ++iterations << endl;
+
+        Message msg;
+        msg.mtype = MSG_TYPE_FROM_WORKER;
+        msg.worker_id = getpid();
+        msg.command = 0;
+        msg.seconds = clock->seconds;
+        msg.nanoseconds = clock->nanoseconds;
+        msgsnd(msg_queue_id, &msg, sizeof(msg) - sizeof(long), 0);
+
+        if (clock->seconds > terminate_seconds ||
+            (clock->seconds == terminate_seconds && clock->nanoseconds >= terminate_nanoseconds)) {
+            cout << "WORKER: PID " << getpid() << " Terminating after " << iterations << " iterations.\n";
+            exit(0);
+        }
+    }
+
+    
     return 0;
 
 

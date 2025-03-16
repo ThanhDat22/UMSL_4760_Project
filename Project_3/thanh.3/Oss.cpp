@@ -11,6 +11,8 @@ ofstream fout; // Log file
 string log_file = "logfile";
 PCB pcb[MAX_PCB]; // Array of PCB structures
 
+int next_worker_index = 0;
+bool timeout_flag = false;
 
 int scheduling_queue[MAX_PCB]; // Queue for scheduling workers
 int queue_size = 0; // Size of the scheduling queue
@@ -34,7 +36,6 @@ int main(int argc, char** argv) {
 
     // Register signal handlers
     signal(SIGALRM, signal_handler); // Set up signal handler for SIGALRM
-    signal(SIGTERM, signal_handler); // Set up signal handler for SIGTERM
     signal(SIGINT, signal_handler); // Handle Ctrl + C
 
     alarm(60); // Set up alarm for 60 seconds
@@ -62,42 +63,39 @@ int main(int argc, char** argv) {
     int last_print_ns = clock->nanoseconds; // Last printed nanosecond
 
     // Main loop
-    while(true) {
-        if(timer_tick) {
-            timer_tick = 0; // Reset the timer tick flag
-            increment_clock(clock, INCREMENT_NS); // Increment the clock
+    while (true) {
+        increment_clock(clock, 250000000);
 
-            if((clock->nanoseconds - last_print_ns) >= (500 * INCREMENT_NS) || (clock->seconds - last_print_sec) > 0) {
-                print_worker_stats(); 
-                log_worker_stats();
-                last_print_sec = clock->seconds; // Update the last printed second
-                last_print_ns = clock->nanoseconds; // Update the last printed nanosecond
+        if ((clock->nanoseconds - last_print_ns) >= (500 * INCREMENT_NS) || 
+            (clock->seconds - last_print_sec) > 0) {
+            print_worker_stats();
+            log_worker_stats();
+            last_print_sec = clock->seconds;
+            last_print_ns = clock->nanoseconds;
+        }
+
+        check_terminated_workers();
+
+        // Launch workers based on scheduling
+        if (workers_launched < num_workers && count_running_workers() < max_simul_workers) {
+            if (launch_worker(clock, time_limit)) {
+                workers_launched++;
             }
+        }
 
-            check_terminated_workers(); // Check for terminated workers
+        if (priority_queue_size > 0) {
+            schedule_workers();
+        }
 
-            if(workers_launched < num_workers && count_running_workers() < max_simul_workers) {
-                if(launch_worker(clock, time_limit)) {
-                    workers_launched++; // Increment the number of workers launched
-                }
-            }
+        if (workers_launched >= num_workers && count_running_workers() == 0) {
+            cout << "OSS: All workers finished. Exiting...\n";
+            break;
+        }
 
-            // Schedule the next worker (priority-based)
-            if (priority_queue_size > 0) {
-                schedule_workers();
-            }
-
-            if(workers_launched >= num_workers && count_running_workers() == 0) {
-                cout << "OSS: All workers finished. Exiting..." << endl;
-                break;
-            }
-
-            if (timeout_flag) {
-                cout << "OSS: Timeout reached. Terminating remaining workers..." << endl;
-                kill_workers(); // Terminate all remaining workers
-                break;
-            }
-
+        if (timeout_flag) {
+            cout << "OSS: Timeout reached. Terminating remaining workers...\n";
+            kill_workers();
+            break;
         }
     }
 
@@ -113,10 +111,11 @@ int main(int argc, char** argv) {
  *  @param signum The signal number.
  */
  void signal_handler(int sig) {
-    if(sig == SIGALRM) {
-        timer_tick = 1;
-    } else if(sig == SIGTERM) {
-        timeout_flag = 1;
+    if (sig == SIGALRM || sig == SIGINT) {
+        cout << "\nOSS: Terminating remaining workers...\n";
+        kill_workers(); // Clean up workers
+        cleanup_and_exit();
+        exit(0);
     }
 }
 
@@ -247,17 +246,13 @@ void print_process_table(Clock* clock) {
  *  @param increment_ns Number of nanoseconds to increment.
  */
 void increment_clock(Clock* clock, int increment_ns) {
-    clock->nanoseconds += increment_ns;
+    int running_workers = count_running_workers();
+    int time_increment = (running_workers > 0) ? (250000000 / running_workers) : 250000000;
+    
+    clock->nanoseconds += time_increment;
     if (clock->nanoseconds >= ONE_BILLION) {
-        clock->seconds += 1;
+        clock->seconds++;
         clock->nanoseconds -= ONE_BILLION;
-    }
-
-    // Notify all worker processes to wake up
-    for (int i = 0; i < MAX_PCB; i++) {
-        if (pcb[i].occupied) {
-            kill(pcb[i].pid, SIGUSR1);  // Wake up worker
-        }
     }
 }
 
@@ -265,14 +260,14 @@ void increment_clock(Clock* clock, int increment_ns) {
 void check_terminated_workers() {
     int status;
     pid_t pid;
-    while((pid = waitpid(-1, &status, WNOHANG)) > 0) {
-        for(int i = 0; i < MAX_PCB; i++) {
-            if(pcb[i].occupied && (pcb[i].pid == pid)) {
+    while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
+        for (int i = 0; i < MAX_PCB; i++) {
+            if (pcb[i].occupied && pcb[i].pid == pid) {
+                cout << "OSS: Worker " << pid << " terminated.\n";
                 pcb[i].occupied = 0;
                 pcb[i].pid = 0;
-                pcb[i].start_seconds = 0;
-                pcb[i].start_nanoseconds = 0;
-                cout << "OSS: Worker PID " << pid << " terminated with exit code " << WEXITSTATUS(status) << "." << endl;
+                pcb[i].messages_sent = 0;
+                pcb[i].messages_received = 0;
                 break;
             }
         }
@@ -398,18 +393,13 @@ bool launch_worker(Clock* clock, int time_upper_bound) {
 //Schedules workers based on the scheduling queue.
 void schedule_workers() {
     if (priority_queue_size > 0) {
-        int worker_id = peek_priority_queue();
+        int worker_id = pop_from_priority_queue();
 
-        // Send message to highest-priority worker
-        send_message(worker_id, 1);
-
-        // Wait for response
+        send_message(worker_id, 1); // Send work command
         receive_message();
 
-        // After handling, reinsert into queue (if still running)
-        int completed_worker = pop_from_priority_queue();
-        if (pcb[completed_worker].occupied) {
-            insert_into_priority_queue(completed_worker);
+        if (pcb[worker_id].occupied) {
+            insert_into_priority_queue(worker_id);
         }
     }
 }

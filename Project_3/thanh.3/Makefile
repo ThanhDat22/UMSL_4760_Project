@@ -6,8 +6,12 @@
 CXX = g++
 CXXFLAGS = -Wall -g
 
+# Source files
+OSS_SRC = Oss.cpp Shared_Clock.cpp Message.cpp
+WORKER_SRC = Worker.cpp Shared_Clock.cpp Message.cpp
+
 # Targets and sources
-TARGET = oss
+OSS = oss
 WORKER = worker
 
 # Object files
@@ -33,11 +37,11 @@ $(WORKER): $(WORKER_OBJ)
 
 # Clean object files and executables
 clean:
-	rm -f $(OSS_OBJ) $(WORKER_OBJ) $(OSS) $(WORKER)
+	rm -f $(OSS_OBJ) $(WORKER_OBJ) $(OSS) $(WORKER) logfile
 
 # Run OSS with example parameters
 run:
-	./oss -n 5 -s 3 -t 10 -i 100 -f logfile.txt
+	./oss -n 5 -s 3 -t 10 -i 100 -f logfile
 
 # Avoid conflicts with files named 'clean' or 'run'
 .PHONY: all clean run
