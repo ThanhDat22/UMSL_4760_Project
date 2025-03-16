@@ -1,7 +1,7 @@
 #include "Message.h"
 
 int msg_queue_id; // Message queue ID
-
+extern PCB pcb[MAX_PCB]; // Process Control Block array
 // Function definitions
 
 // Create a message queue
