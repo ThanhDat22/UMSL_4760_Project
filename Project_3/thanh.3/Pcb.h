@@ -7,6 +7,8 @@
 #ifndef PCB_H
 #define PCB_H
 
+#include <sys/types.h>   // For pid_t
+
 #define MAX_PCB 20
 
 struct PCB {
