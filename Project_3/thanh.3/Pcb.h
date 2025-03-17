@@ -16,5 +16,5 @@ struct PCB {
 
     int priority;
 };
-
+const int MAX_PCB = 20; // Maximum number of processes
 extern PCB pcb[MAX_PCB]; // Array of PCB structures
