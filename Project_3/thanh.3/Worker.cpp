@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
     struct sigaction sa;
     sa.sa_handler = wake_signal_handler;
     sigemptyset(&sa.sa_mask);
-    sa.sa_flags = 0;
+    sa.sa_flags = SA_RESTART; // Restart interrupted system calls
     sigaction(SIGUSR1, &sa, NULL);
 
     int terminate_seconds = clock->seconds + max_seconds;
