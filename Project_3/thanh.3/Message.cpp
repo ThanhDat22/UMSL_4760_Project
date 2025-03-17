@@ -44,6 +44,7 @@ void receive_message() {
 // Send a message to a worker
 void send_message(int worker_id, int command) {
     Message msg;
+    memset(&msg, 0, sizeof(msg)); // Initialize the message structure to zero
     msg.mtype = MSG_TYPE_TO_WORKER;
     msg.worker_id = pcb[worker_id].pid;
     msg.command = command;
