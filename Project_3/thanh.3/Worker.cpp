@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
     parse_arguments(argc, argv, max_seconds, max_nanoseconds);
 
     // Setup signal handler for wake signal
-    key_t key = ftok("/tmp", 'M');
+    key_t key = ftok("msgq.txt", 1);
     msg_queue_id = msgget(key, 0666); 
     if (msg_queue_id < 0) {
         perror("Worker: msgget failed");

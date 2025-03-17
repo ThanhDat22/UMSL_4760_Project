@@ -6,7 +6,7 @@ extern PCB pcb[MAX_PCB]; // Process Control Block array
 
 // Create a message queue
 void create_message_queue() {
-    key_t key = ftok(".", 'M');
+    key_t key = ftok("msgq.txt", 1);
     msg_queue_id = msgget(key, IPC_CREAT | 0666);
     if (msg_queue_id < 0) {
         perror("msgget failed");
