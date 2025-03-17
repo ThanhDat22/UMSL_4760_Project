@@ -51,16 +51,19 @@ void send_message(int worker_id, int command) {
     msg.seconds = 0;
     msg.nanoseconds = 0;
 
-    if (msgsnd(msg_queue_id, &msg, sizeof(Message) - sizeof(msg.mtype), 0) == -1) {
-        if (errno == EINTR) {
-            continue; 
+    while (true) {
+        if (msgsnd(msg_queue_id, &msg, sizeof(msg) - sizeof(msg.mtype), 0) == -1) {
+            if (errno == EINTR) {
+                continue; // Retry if interrupted by a signal
+            }
+            perror("msgsnd failed");
+            break; // Exit the loop on other errors
+        } else {
+            cout << "OSS: Sent message to worker " << worker_id 
+                 << " with command " << command << endl;
+            pcb[worker_id].messages_sent++;
+            break; // Success – exit the loop
         }
-        perror("msgsnd failed");
-        break;
-    } else {
-        cout << "OSS: Sent message to worker " << worker_id 
-                  << " with command " << command << endl;
-        pcb[worker_id].messages_sent++; // Increment the sent message count for the worker
     }
 }
 
