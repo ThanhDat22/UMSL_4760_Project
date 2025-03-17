@@ -3,6 +3,12 @@
 // Last edited by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-03-17
 
 // Struct for the Process Control Block (PCB)
+
+#ifndef PCB_H
+#define PCB_H
+
+#define MAX_PCB 20
+
 struct PCB {
     int occupied; // 1 if occupied, 0 if not
     pid_t pid; // Process ID
@@ -16,5 +22,5 @@ struct PCB {
 
     int priority;
 };
-const int MAX_PCB = 20; // Maximum number of processes
+
 extern PCB pcb[MAX_PCB]; // Array of PCB structures
