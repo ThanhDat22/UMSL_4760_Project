@@ -160,7 +160,7 @@ void run_worker(Clock* clock, int start_seconds, int start_nanoseconds, int term
         msg.seconds = current_seconds;
         msg.nanoseconds = current_nanoseconds;
 
-        if (msgsnd(msg_queue_id, &msg, sizeof(msg) - sizeof(long), 0) == -1) {
+        if (msgsnd(msg_queue_id, &msg, sizeof(Message) - sizeof(msg.mtype), 0) == -1) {
             perror("WORKER: Failed to send message");
         }
 
