@@ -51,8 +51,10 @@ void send_message(int worker_id, int command) {
     msg.seconds = 0;
     msg.nanoseconds = 0;
 
-    if (msgsnd(msg_queue_id, &msg, sizeof(msg) - sizeof(msg.mtype), 0) == -1) {
-        if (errno == EINTR) { continue; } // Retry if interrupted by a signal
+    if (msgsnd(msg_queue_id, &msg, sizeof(Message) - sizeof(msg.mtype), 0) == -1) {
+        if (errno == EINTR) {
+            continue; 
+        }
         perror("msgsnd failed");
         break;
     } else {
