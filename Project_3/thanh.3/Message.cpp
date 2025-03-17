@@ -45,14 +45,16 @@ void receive_message() {
 void send_message(int worker_id, int command) {
     Message msg;
     msg.mtype = MSG_TYPE_TO_WORKER;
-    msg.worker_id = worker_id;
+    msg.worker_id = pcb[worker_id].pid;
     msg.command = command;
 
     msg.seconds = 0;
     msg.nanoseconds = 0;
 
     if (msgsnd(msg_queue_id, &msg, sizeof(msg) - sizeof(msg.mtype), 0) == -1) {
+        if (errno == EINTR) { continue; } // Retry if interrupted by a signal
         perror("msgsnd failed");
+        break;
     } else {
         cout << "OSS: Sent message to worker " << worker_id 
                   << " with command " << command << endl;
