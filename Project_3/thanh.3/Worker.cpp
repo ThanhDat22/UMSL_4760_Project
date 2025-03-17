@@ -18,6 +18,14 @@ int main(int argc, char** argv) {
     int iterations = 0; // Counter for iterations
     parse_arguments(argc, argv, max_seconds, max_nanoseconds);
 
+    // Setup signal handler for wake signal
+    key_t key = ftok(".", 'M');
+    msg_queue_id = msgget(key, 0666); 
+    if (msg_queue_id < 0) {
+        perror("Worker: msgget failed");
+        exit(1);
+    }
+
     // Attach to the shared clock
     Shared_Clock shared_clock(SHMKEY, false); // Create the shared clock
     Clock* clock = shared_clock.get_clock();
@@ -52,7 +60,7 @@ int main(int argc, char** argv) {
         msg.command = 0;
         msg.seconds = clock->seconds;
         msg.nanoseconds = clock->nanoseconds;
-        msgsnd(msg_queue_id, &msg, sizeof(msg) - sizeof(long), 0);
+        msgsnd(msg_queue_id, &msg, sizeof(msg) - sizeof(msg.mtype), 0);
 
         if (clock->seconds > terminate_seconds ||
             (clock->seconds == terminate_seconds && clock->nanoseconds >= terminate_nanoseconds)) {
@@ -132,11 +140,11 @@ void compute_termination_time(Clock* clock, int max_seconds, int max_nanoseconds
  *  @param terminate_nanoseconds The termination nanoseconds.
  */
 void run_worker(Clock* clock, int start_seconds, int start_nanoseconds, int terminate_seconds, int terminate_nanoseconds) {
-   struct sigaction sa;
-    sa.sa_handler = wake_signal_handler;
-    sigemptyset(&sa.sa_mask);
-    sa.sa_flags = 0;
-    sigaction(SIGUSR1, &sa, NULL); // Set up signal handler for SIGUSR1
+    // struct sigaction sa;
+    // sa.sa_handler = wake_signal_handler;
+    // sigemptyset(&sa.sa_mask);
+    // sa.sa_flags = 0;
+    // sigaction(SIGUSR1, &sa, NULL); // Set up signal handler for SIGUSR1
     
     while(true) {
         pause(); // Wait for wake signal
@@ -152,7 +160,7 @@ void run_worker(Clock* clock, int start_seconds, int start_nanoseconds, int term
         msg.seconds = current_seconds;
         msg.nanoseconds = current_nanoseconds;
 
-        if (msgsnd(msg_queue_id, &msg, sizeof(msg) - sizeof(long), 0) == -1) {
+        if (msgsnd(msg_queue_id, &msg, sizeof(msg) - sizeof(msg.mtype), 0) == -1) {
             perror("WORKER: Failed to send message");
         }
 
