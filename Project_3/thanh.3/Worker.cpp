@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
     parse_arguments(argc, argv, max_seconds, max_nanoseconds);
 
     // Setup signal handler for wake signal
-    key_t key = ftok(".", 'M');
+    key_t key = ftok("/tmp", 'M');
     msg_queue_id = msgget(key, 0666); 
     if (msg_queue_id < 0) {
         perror("Worker: msgget failed");
@@ -49,18 +49,19 @@ int main(int argc, char** argv) {
 
     cout << "WORKER: Starting with PID: " << getpid() << endl;
 
+    Message msg;
     while (true) {
         pause();
 
         cout << "WORKER: PID " << getpid() << " Iteration " << ++iterations << endl;
 
-        Message msg;
+        
         msg.mtype = MSG_TYPE_FROM_WORKER;
         msg.worker_id = (int)getpid();
         msg.command = 0;
         msg.seconds = clock->seconds;
         msg.nanoseconds = clock->nanoseconds;
-        msgsnd(msg_queue_id, &msg, sizeof(msg) - sizeof(long), 0);
+        msgsnd(msg_queue_id, &msg, sizeof(Message) - sizeof(long), 0);
 
         if (clock->seconds > terminate_seconds ||
             (clock->seconds == terminate_seconds && clock->nanoseconds >= terminate_nanoseconds)) {
@@ -155,7 +156,7 @@ void run_worker(Clock* clock, int start_seconds, int start_nanoseconds, int term
         // Send status message to OSS
         Message msg;
         msg.mtype = MSG_TYPE_FROM_WORKER;
-        msg.worker_id = getpid(); // Worker PID as ID
+        msg.worker_id = (int)getpid(); // Worker PID as ID
         msg.command = 0;
         msg.seconds = current_seconds;
         msg.nanoseconds = current_nanoseconds;

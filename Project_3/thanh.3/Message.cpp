@@ -18,7 +18,7 @@ void create_message_queue() {
 // Receive a message from the queue
 void receive_message() {
     Message msg;
-    if (msgrcv(msg_queue_id, &msg, sizeof(msg) - sizeof(msg.mtype), MSG_TYPE_FROM_WORKER, 0) == -1) {
+    if (msgrcv(msg_queue_id, &msg, sizeof(Message) - sizeof(msg.mtype), MSG_TYPE_FROM_WORKER, 0) == -1) {
         perror("msgrcv failed");
     } else {
         cout << "OSS: Received response from worker " << msg.worker_id 
