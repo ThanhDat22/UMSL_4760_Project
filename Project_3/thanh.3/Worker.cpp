@@ -27,7 +27,7 @@ int main(int argc, char** argv) {
     }
 
     struct sigaction sa;
-    sa.sa_handler = signal_handler;
+    sa.sa_handler = wake_signal_handler;
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = 0;
     sigaction(SIGUSR1, &sa, NULL);
