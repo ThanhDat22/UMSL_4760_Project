@@ -3,13 +3,15 @@
 // Last edited by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-03-12
 
 #include "Oss.h"
+#include "Pcb.h"         
+#include "Message.h"       
 
 volatile sig_atomic_t timeout_flag = 0; // Flag to indicate timeout
 volatile sig_atomic_t timer_tick = 0; // Flag to indicate timer tick
 Message buf; // Message buffer
 ofstream fout; // Log file
 string log_file = "logfile";
-PCB pcb[MAX_PCB]; // Array of PCB structures
+//PCB pcb[MAX_PCB]; // Array of PCB structures
 
 int next_worker_index = 0;
 

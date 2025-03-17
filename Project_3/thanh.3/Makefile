@@ -7,8 +7,8 @@ CXX = g++
 CXXFLAGS = -Wall -g -fpack-struct=1
 
 # Source files
-OSS_SRC = Oss.cpp Shared_Clock.cpp Message.cpp
-WORKER_SRC = Worker.cpp Shared_Clock.cpp Message.cpp
+OSS_SRC = Oss.cpp Shared_Clock.cpp Message.cpp Pcb.cpp
+WORKER_SRC = Worker.cpp Shared_Clock.cpp Message.cpp Pcb.cpp
 
 # Targets and sources
 OSS = oss
@@ -51,3 +51,4 @@ Oss.o: Oss.h Shared_Clock.h Message.h
 Worker.o: Worker.h Shared_Clock.h Message.h Oss.h
 Shared_Clock.o: Shared_Clock.h
 Message.o: Message.h
+Pcb.o: Pcb.h

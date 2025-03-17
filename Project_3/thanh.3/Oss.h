@@ -7,6 +7,7 @@
 #define OSS_H
 
 #include "Shared_Clock.h"
+#include "Pcb.h"         // For Process Control Block (PCB) structure
 #include "Message.h"      // For message queue and message structure
 
 #include <csignal>       // For signal(), SIGALRM, SIGTERM
@@ -25,23 +26,23 @@
 #include <signal.h>
 
 // Constants
-const int MAX_PCB = 20; // Maximum number of processes
+// const int MAX_PCB = 20; // Maximum number of processes
 const int INCREMENT_NS = 1000000; // Increment in nanoseconds per loop
 
 // Struct for the Process Control Block (PCB)
-struct PCB {
-    int occupied; // 1 if occupied, 0 if not
-    pid_t pid; // Process ID
-    int start_seconds; // Start time in seconds
-    int start_nanoseconds; // Start time in nanoseconds
+// struct PCB {
+//     int occupied; // 1 if occupied, 0 if not
+//     pid_t pid; // Process ID
+//     int start_seconds; // Start time in seconds
+//     int start_nanoseconds; // Start time in nanoseconds
 
-    int messages_sent;
-    int messages_received;
-    int total_runtime_sec;
-    int total_runtime_ns;
+//     int messages_sent;
+//     int messages_received;
+//     int total_runtime_sec;
+//     int total_runtime_ns;
 
-    int priority;
-};
+//     int priority;
+// };
 
 // Global variables declaration
 extern volatile sig_atomic_t timeout_flag;
