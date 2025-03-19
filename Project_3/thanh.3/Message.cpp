@@ -17,8 +17,9 @@ void create_message_queue() {
 
 // Receive a message from the queue
 void receive_message() {
-    Message msg = {0}; 
-
+    Message msg; 
+    memset(&msg, 0, sizeof(msg));
+    
     if (msgrcv(msg_queue_id, &msg, sizeof(Message), MSG_TYPE_FROM_WORKER, 0) == -1) {
         perror("msgrcv failed");
     } else {
