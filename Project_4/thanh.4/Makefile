@@ -1,6 +1,6 @@
 # Created by Thanh Dat Nguyen on 2025-02-11
 
-# Last updated by Thanh Dat Nguyen on 2025-03-13
+# Last updated by Thanh Dat Nguyen on 2025-04-01
 
 # Compiler and flags
 CXX = g++
@@ -21,6 +21,7 @@ WORKER_OBJ = $(WORKER_SRC:.cpp=.o)
 # Build the project
 all: $(OSS) $(WORKER)
 	touch logfile
+	touch msgq.txt
 	chmod 666 logfile
 
 # Build OSS
@@ -37,7 +38,7 @@ $(WORKER): $(WORKER_OBJ)
 
 # Clean object files and executables
 clean:
-	rm -f $(OSS_OBJ) $(WORKER_OBJ) $(OSS) $(WORKER) logfile
+	rm -f $(OSS_OBJ) $(WORKER_OBJ) $(OSS) $(WORKER) logfile *.txt
 
 # Run OSS with example parameters
 run:

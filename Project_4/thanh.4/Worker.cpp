@@ -4,6 +4,9 @@
 
 #include "Worker.h"
 
+int msg_queue_id; // Message queue ID
+
+Message received_msg; // Global to be filled in signal handler
 
 // Main function
 int main(int argc, char** argv) {
@@ -51,16 +54,21 @@ int main(int argc, char** argv) {
 
     //Message msg;
     while (true) {
-        pause(); // Wait for wake signal
+        pause(); // wait for OSS to signal
 
         cout << "WORKER: PID " << getpid() << " Iteration " << ++iterations << endl;
 
-        
-        // Simulate behavior
-        int behavior = rand() % 100;
-        int used_time;
-        int status;
+        Message msg;
+        if (msgrcv(msg_queue_id, &msg, sizeof(msg) - sizeof(long), MSG_TYPE_TO_WORKER, 0) == -1) {
+            perror("WORKER: msgrcv failed");
+            exit(1);
+        }
 
+        int quantum = msg.used_time;
+        int status;
+        int used_time;
+
+        int behavior = rand() % 100;
         if (behavior < 25) {
             used_time = simulate_termination();
             status = -1;
@@ -68,7 +76,7 @@ int main(int argc, char** argv) {
             used_time = simulate_io_block();
             status = 1;
         } else {
-            used_time = simulate_full_quantum();
+            used_time = quantum; // Simulate full quantum usage
             status = 0;
         }
 
@@ -78,15 +86,13 @@ int main(int argc, char** argv) {
             cout << "WORKER: PID " << getpid() << " Terminating by choice.\n";
             exit(0);
         }
+
         if (clock->seconds > terminate_seconds ||
             (clock->seconds == terminate_seconds && clock->nanoseconds >= terminate_nanoseconds)) {
             cout << "WORKER: PID " << getpid() << " Reached max lifetime. Terminating.\n";
             exit(0);
         }
-    
-    }
-
-    
+    }  
     return 0;
 
 

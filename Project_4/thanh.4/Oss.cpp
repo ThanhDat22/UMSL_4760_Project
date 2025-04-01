@@ -1,6 +1,6 @@
 // Created by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-02-13
 
-// Last edited by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-03-12
+// Last edited by Thanh Dat Nguyen (tnrbf@umsystem.edu) on 2025-04-01
 
 #include "Oss.h"
 #include "Pcb.h"         
@@ -12,6 +12,8 @@ Message buf; // Message buffer
 ofstream fout; // Log file
 string log_file = "logfile";
 //PCB pcb[MAX_PCB]; // Array of PCB structures
+queue<int> high_q, mid_q, low_q, blocked_q; // Queues for scheduling
+
 
 int next_worker_index = 0;
 
@@ -23,9 +25,9 @@ int queue_rear = 0; // Rear of the queue
 int priority_queue[MAX_PCB]; // Queue for worker priorities
 int priority_queue_size = 0; // Size of the priority queue
 Shared_Clock shared_clock(SHMKEY, true);
+Clock* clock = NULL;
 
 // Main function
-
 int main(int argc, char** argv) {
     // Variables declaration
     int num_workers; // Number of workers
@@ -42,63 +44,26 @@ int main(int argc, char** argv) {
 
     alarm(60); // Set up alarm for 60 seconds
 
-    // Initialize the shared clock
-    Shared_Clock shared_clock(SHMKEY, true); // Create the shared clock
-    Clock* clock = shared_clock.get_clock(); // Get the pointer to the shared clock structure
-    if(clock == NULL) {
-        cerr << "Failed to create shared clock." << endl;
-        exit(1);
-    }
+    clock = shared_clock.get_clock();
+    if (!clock) { std::cerr << "Clock attach failed" << std::endl; exit(1); }
 
-    init_process_table(); // Initialize the process table
-    create_message_queue(); // Create the message queue
+    init_process_table();
+    create_message_queue();
+    setup_timer(interval);
 
-    srand(time(NULL)); // Seed the random number generator
-
-
-    setup_timer(interval); // Set up the timer
-
-    cout << "OSS: Starting OSS loop..." << endl;
-
-    int workers_launched = 0; // Number of workers launched
-    int last_print_sec = clock->seconds; // Last printed second
-    int last_print_ns = clock->nanoseconds; // Last printed nanosecond
-
-    // Main loop
+    int launched = 0;
     while (true) {
-        increment_clock(clock, 250000000);
-
-        if ((clock->nanoseconds - last_print_ns) >= (500 * INCREMENT_NS) || 
-            (clock->seconds - last_print_sec) > 0) {
-            print_worker_stats();
-            log_worker_stats();
-            last_print_sec = clock->seconds;
-            last_print_ns = clock->nanoseconds;
-        }
-
+        increment_clock(clock, INCREMENT_NS);
         check_terminated_workers();
+        check_blocked_queue(clock);
 
-        // Launch workers based on scheduling
-        if (workers_launched < num_workers && count_running_workers() < max_simul_workers) {
-            if (launch_worker(clock, time_limit)) {
-                workers_launched++;
-            }
-        }
+        if (launched < num_workers && count_running_workers() < max_simul_workers)
+            if (launch_worker(clock, time_limit)) launched++;
 
-        if (priority_queue_size > 0) {
-            schedule_workers();
-        }
+        schedule_workers();
 
-        if (workers_launched >= num_workers && count_running_workers() == 0) {
-            cout << "OSS: All workers finished. Exiting...\n";
-            break;
-        }
-
-        if (timeout_flag) {
-            cout << "OSS: Timeout reached. Terminating remaining workers...\n";
-            kill_workers();
-            break;
-        }
+        if (launched >= num_workers && count_running_workers() == 0) break;
+        if (timeout_flag) break;
     }
 
     cleanup_and_exit(); // Clean up and exit the program
@@ -325,6 +290,11 @@ bool launch_worker(Clock* clock, int time_upper_bound) {
         cerr << "Exec failed" << endl;
         exit(1);
     } else { // Parent process: update process table
+
+        pcb[slot].queue_level = 0;
+        pcb[slot].blocked = 0;
+        high_q.push(slot);
+
         pcb[slot].occupied = 1;
         pcb[slot].pid = pid;
         pcb[slot].start_seconds = clock->seconds;
@@ -382,14 +352,37 @@ bool launch_worker(Clock* clock, int time_upper_bound) {
 
 //Schedules workers based on the scheduling queue.
 void schedule_workers() {
-    if (priority_queue_size > 0) {
-        int worker_id = pop_from_priority_queue();
+    queue<int>* queues[] = { &high_q, &mid_q, &low_q };
+    int quantum[] = { QUANTUM_BASE, 2 * QUANTUM_BASE, 4 * QUANTUM_BASE };
 
-        send_message(worker_id, 1); // Send work command
-        receive_message();
+    for (int level = 0; level < 3; ++level) {
+        if (!queues[level]->empty()) {
+            int wid = queues[level]->front(); queues[level]->pop();
+            Message msg_out;
+            memset(&msg_out, 0, sizeof(msg_out));
+            msg_out.mtype = MSG_TYPE_TO_WORKER;
+            msg_out.worker_id = pcb[wid].pid;
+            msg_out.command = 0;
+            msg_out.seconds = 0;
+            msg_out.nanoseconds = 0;
+            msg_out.used_time = quantum[pcb[wid].queue_level];
+            msg_out.status = 0;
 
-        if (pcb[worker_id].occupied) {
-            insert_into_priority_queue(worker_id);
+            if (msgsnd(msg_queue_id, &msg_out, sizeof(msg_out) - sizeof(long), 0) == -1) {
+                perror("OSS: msgsnd failed");
+                return;
+            } else {
+                pcb[wid].messages_sent++;
+            }
+
+            Message msg;
+            if (msgrcv(msg_queue_id, &msg, sizeof(msg) - sizeof(long), MSG_TYPE_FROM_WORKER, 0) == -1) {
+                perror("OSS: msgrcv");
+                return;
+            }
+
+            handle_worker_response(wid, msg, clock);
+            break; // Only one per cycle
         }
     }
 }
@@ -521,4 +514,58 @@ int peek_priority_queue() {
     return priority_queue[0];
 }
 
+void handle_worker_response(int wid, Message& msg, Clock* clock) {
+    if (!pcb[wid].occupied) { return; }
 
+    // Update runtime
+    pcb[wid].total_runtime_ns += msg.used_time;
+    while (pcb[wid].total_runtime_ns >= ONE_BILLION) {
+        pcb[wid].total_runtime_ns -= ONE_BILLION;
+        pcb[wid].total_runtime_sec++;
+    }
+
+    // Update clock
+    clock->nanoseconds += msg.used_time;
+    if (clock->nanoseconds >= ONE_BILLION) {
+        clock->nanoseconds -= ONE_BILLION;
+        clock->seconds++;
+    }
+
+    if (msg.status == -1) {
+        pcb[wid].occupied = 0;
+        kill(pcb[wid].pid, SIGTERM);
+    } else if (msg.status == 1) {
+        pcb[wid].blocked = 1;
+        pcb[wid].eventWaitSec = clock->seconds;
+        pcb[wid].eventWaitNano = clock->nanoseconds + 50000000; // 50ms wait
+        if (pcb[wid].eventWaitNano >= ONE_BILLION) {
+            pcb[wid].eventWaitNano -= ONE_BILLION;
+            pcb[wid].eventWaitSec++;
+        }
+        blocked_q.push(wid);
+    } else {
+        // Full quantum used, demote if not lowest
+        if (pcb[wid].queue_level < 2) { pcb[wid].queue_level++; }
+        if (pcb[wid].queue_level == 0) { high_q.push(wid); }
+        else if (pcb[wid].queue_level == 1) { mid_q.push(wid); }
+        else { low_q.push(wid); }
+    }
+}
+
+void check_blocked_queue(Clock* clock) {
+    int size = blocked_q.size();
+    for (int i = 0; i < size; ++i) {
+        int wid = blocked_q.front(); blocked_q.pop();
+        if (!pcb[wid].occupied) { continue; }
+
+        if (clock->seconds > pcb[wid].eventWaitSec ||
+           (clock->seconds == pcb[wid].eventWaitSec && clock->nanoseconds >= pcb[wid].eventWaitNano)) {
+            pcb[wid].blocked = 0;
+            if (pcb[wid].queue_level == 0) { high_q.push(wid); }
+            else if (pcb[wid].queue_level == 1) { mid_q.push(wid); }
+            else { low_q.push(wid); }
+        } else {
+            blocked_q.push(wid);
+        }
+    }
+}
