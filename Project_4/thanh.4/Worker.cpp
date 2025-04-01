@@ -49,25 +49,41 @@ int main(int argc, char** argv) {
 
     cout << "WORKER: Starting with PID: " << getpid() << endl;
 
-    Message msg;
+    //Message msg;
     while (true) {
-        pause();
+        pause(); // Wait for wake signal
 
         cout << "WORKER: PID " << getpid() << " Iteration " << ++iterations << endl;
 
         
-        msg.mtype = MSG_TYPE_FROM_WORKER;
-        msg.worker_id = (int)getpid();
-        msg.command = 0;
-        msg.seconds = clock->seconds;
-        msg.nanoseconds = clock->nanoseconds;
-        msgsnd(msg_queue_id, &msg, sizeof(Message) - sizeof(long), 0);
+        // Simulate behavior
+        int behavior = rand() % 100;
+        int used_time;
+        int status;
 
-        if (clock->seconds > terminate_seconds ||
-            (clock->seconds == terminate_seconds && clock->nanoseconds >= terminate_nanoseconds)) {
-            cout << "WORKER: PID " << getpid() << " Terminating after " << iterations << " iterations.\n";
+        if (behavior < 25) {
+            used_time = simulate_termination();
+            status = -1;
+        } else if (behavior < 65) {
+            used_time = simulate_io_block();
+            status = 1;
+        } else {
+            used_time = simulate_full_quantum();
+            status = 0;
+        }
+
+        send_worker_response(used_time, status, clock);
+
+        if (status == -1) {
+            cout << "WORKER: PID " << getpid() << " Terminating by choice.\n";
             exit(0);
         }
+        if (clock->seconds > terminate_seconds ||
+            (clock->seconds == terminate_seconds && clock->nanoseconds >= terminate_nanoseconds)) {
+            cout << "WORKER: PID " << getpid() << " Reached max lifetime. Terminating.\n";
+            exit(0);
+        }
+    
     }
 
     
@@ -183,4 +199,31 @@ void run_worker(Clock* clock, int start_seconds, int start_nanoseconds, int term
 // Signal handler for wake signal
 void wake_signal_handler(int signum) {
     return; // Do nothing
+}
+
+int simulate_full_quantum() {
+    return 10000000; // 10ms
+}
+
+int simulate_io_block() {
+    return 1000000 + rand() % 5000000; // 1–6ms
+}
+
+int simulate_termination() {
+    return 1000000 + rand() % 2000000; // 1–3ms
+}
+
+void send_worker_response(int used_time, int status, Clock* clock) {
+    Message msg;
+    msg.mtype = MSG_TYPE_FROM_WORKER;
+    msg.worker_id = getpid();
+    msg.command = 0;
+    msg.seconds = clock->seconds;
+    msg.nanoseconds = clock->nanoseconds;
+    msg.used_time = used_time;
+    msg.status = status;
+
+    if (msgsnd(msg_queue_id, &msg, sizeof(msg) - sizeof(msg.mtype), 0) == -1) {
+        perror("WORKER: Failed to send message");
+    }
 }
