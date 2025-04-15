@@ -1,16 +1,10 @@
 # **Introducing Clock, Process Table, and Message Coordination**
 
 ## **Description**
-- The project simulates an Operating System (OSS) that manages multiple user processes:
-    1. Launch user processes.
-    2. Executes them.
-    3. Waits for them to complete.
-- The number of process and their simultaneous execution are controlled via command line.
-- A simulated system clock placed in shared memory.
-- A process control block table tracking child processes and manages scheduling.
-- Oss sends and receives messages from worker processes to coordinate execution.
-  
 
+- The project simulates an Operating System scheduler using a multi-level feedback to manage uer processes.
+- It build on the foundation of previous projects, adding full coordination between the oss and worker processes via shared message queues.
+  
 ## **Compilation**
 
 To compile the project, type in command line
@@ -78,7 +72,7 @@ race conditions.
 7. Formatted the process table output for readability.
 8. Added message-passing coordination using `msgsnd` and `msgrcv`.
 9. Termination now based on shared clock and message acknowledgment.
-10. 
+
 ### Gaps
 
 - Limit testing case: the maximum of  -n and -s value is 10 due to limitation of opsys server.
