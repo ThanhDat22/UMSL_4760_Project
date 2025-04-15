@@ -27,7 +27,7 @@ int queue_rear = 0; // Rear of the queue
 int priority_queue[MAX_PCB]; // Queue for worker priorities
 int priority_queue_size = 0; // Size of the priority queue
 Shared_Clock shared_clock(SHMKEY, true);
-Clock* clock = NULL;
+Clock* sysclock = NULL;
 
 
 // Main function
@@ -47,8 +47,8 @@ int main(int argc, char** argv) {
 
     alarm(60); // Set up alarm for 60 seconds
 
-    clock = shared_clock.get_clock();
-    if (!clock) { std::cerr << "Clock attach failed" << std::endl; exit(1); }
+    sysclock = shared_clock.get_clock();
+    if (!sysclock) { std::cerr << "Clock attach failed" << std::endl; exit(1); }
 
     init_process_table();
     create_message_queue();
@@ -56,9 +56,9 @@ int main(int argc, char** argv) {
 
     int launched = 0;
     while (true) {
-        increment_clock(clock, INCREMENT_NS);
+        increment_clock(sysclock, INCREMENT_NS);
         check_terminated_workers();
-        check_blocked_queue(clock);
+        check_blocked_queue(sysclock);
 
         if (launched < num_workers && count_running_workers() < max_simul_workers)
             if (launch_worker(clock, time_limit)) launched++;
@@ -517,7 +517,7 @@ int peek_priority_queue() {
     return priority_queue[0];
 }
 
-void handle_worker_response(int wid, Message& msg, Clock* clock) {
+void handle_worker_response(int wid, Message& msg, Clock* sysclock) {
     if (!pcb[wid].occupied) { return; }
 
     // Update runtime
@@ -528,10 +528,10 @@ void handle_worker_response(int wid, Message& msg, Clock* clock) {
     }
 
     // Update clock
-    clock->nanoseconds += msg.used_time;
-    if (clock->nanoseconds >= ONE_BILLION) {
-        clock->nanoseconds -= ONE_BILLION;
-        clock->seconds++;
+    sysclock->nanoseconds += msg.used_time;
+    if (sysclock->nanoseconds >= ONE_BILLION) {
+        sysclock->nanoseconds -= ONE_BILLION;
+        sysclock->seconds++;
     }
 
     if (msg.status == -1) {
@@ -539,8 +539,8 @@ void handle_worker_response(int wid, Message& msg, Clock* clock) {
         kill(pcb[wid].pid, SIGTERM);
     } else if (msg.status == 1) {
         pcb[wid].blocked = 1;
-        pcb[wid].eventWaitSec = clock->seconds;
-        pcb[wid].eventWaitNano = clock->nanoseconds + 50000000; // 50ms wait
+        pcb[wid].eventWaitSec = sysclock->seconds;
+        pcb[wid].eventWaitNano = sysclock->nanoseconds + 50000000; // 50ms wait
         if (pcb[wid].eventWaitNano >= ONE_BILLION) {
             pcb[wid].eventWaitNano -= ONE_BILLION;
             pcb[wid].eventWaitSec++;
