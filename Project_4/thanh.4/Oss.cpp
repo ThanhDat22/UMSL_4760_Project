@@ -415,7 +415,8 @@ void log_worker_stats() {
         log << "\n=== Worker Stats ===\n";
         log << "ID\tPriority\tMessages Sent\tMessages Received\tTotal Runtime (s.ns)\n";
         for (int i = 0; i < MAX_PCB; i++) {
-            if (pcb[i].occupied) {
+            if (pcb[i].messages_sent > 0 || pcb[i].messages_received > 0 || 
+                pcb[i].total_runtime_sec > 0 || pcb[i].total_runtime_ns > 0) {
                 log << i << "\t"
                     << pcb[i].priority << "\t\t"
                     << pcb[i].messages_sent << "\t\t"
