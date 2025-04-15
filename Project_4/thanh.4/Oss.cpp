@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
         check_blocked_queue(sysclock);
 
         if (launched < num_workers && count_running_workers() < max_simul_workers)
-            if (launch_worker(clock, time_limit)) launched++;
+            if (launch_worker(sysclock, time_limit)) launched++;
 
         schedule_workers();
 
