@@ -13,7 +13,7 @@ volatile sig_atomic_t timer_tick = 0; // Flag to indicate timer tick
 Message buf; // Message buffer
 ofstream fout; // Log file
 string log_file = "logfile";
-//PCB pcb[MAX_PCB]; // Array of PCB structures
+PCB pcb[MAX_PCB]; // Array of PCB structures
 queue<int> high_q, mid_q, low_q, blocked_q; // Queues for scheduling
 
 
