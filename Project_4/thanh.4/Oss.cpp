@@ -224,8 +224,8 @@ void check_terminated_workers() {
                 cout << "OSS: Worker " << pid << " terminated.\n";
                 pcb[i].occupied = 0;
                 pcb[i].pid = 0;
-                pcb[i].messages_sent = 0;
-                pcb[i].messages_received = 0;
+                //pcb[i].messages_sent = 0;
+                //pcb[i].messages_received = 0;
                 break;
             }
         }
