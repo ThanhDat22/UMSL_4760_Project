@@ -12,7 +12,8 @@
 #include <sys/ipc.h>    // For IPC key
 #include <sys/msg.h>   // For message queue
 #include <sys/types.h>   // For pid_t
-#include <iostream>      
+#include <iostream>
+#include <cstring>      
 
 
 using namespace std;
