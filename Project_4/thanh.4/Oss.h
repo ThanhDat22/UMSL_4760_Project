@@ -75,6 +75,7 @@ void insert_into_priority_queue(int);
 int pop_from_priority_queue(); // Pop a worker from the priority queue
 int peek_priority_queue(); // Peek at the next worker in the priority queue
 void check_blocked_queue(Clock*); // Check the blocked queue
+void handle_worker_response(int, Message&, Clock*); // Handle worker response
 
 
 
