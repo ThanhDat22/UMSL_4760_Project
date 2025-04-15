@@ -25,21 +25,8 @@ void receive_message() {
     } else {
         cout << "OSS: Received response from worker " << msg.worker_id 
                   << " with status " << msg.command << endl;
-
-        pcb[msg.worker_id].messages_received++; // Increment the received message count for the worker
-
-        int elapsed_seconds = msg.seconds - pcb[msg.worker_id].start_seconds;
-        int elapsed_nanoseconds = msg.nanoseconds - pcb[msg.worker_id].start_nanoseconds;
-
-        // Handle overflow of nanoseconds
-        if (elapsed_nanoseconds < 0) {
-            elapsed_seconds -= 1;
-            elapsed_nanoseconds += ONE_BILLION;
-        }
-
-        pcb[msg.worker_id].total_runtime_sec += elapsed_seconds;
-        pcb[msg.worker_id].total_runtime_ns += elapsed_nanoseconds;
     }
+
 }
 
 // Send a message to a worker
