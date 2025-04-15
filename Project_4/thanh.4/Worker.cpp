@@ -4,8 +4,6 @@
 
 #include "Worker.h"
 
-int msg_queue_id; // Message queue ID
-
 Message received_msg; // Global to be filled in signal handler
 
 // Main function
