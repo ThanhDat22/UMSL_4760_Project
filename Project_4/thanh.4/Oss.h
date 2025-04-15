@@ -24,6 +24,7 @@
 #include <cstdio>        // For perror()
 #include <fstream>       // For file I/O
 #include <signal.h>
+#include <queue>        
 
 // Constants
 // const int MAX_PCB = 20; // Maximum number of processes
@@ -73,6 +74,7 @@ void cleanup_and_exit(); // Clean up and exit the program
 void insert_into_priority_queue(int);
 int pop_from_priority_queue(); // Pop a worker from the priority queue
 int peek_priority_queue(); // Peek at the next worker in the priority queue
+void check_blocked_queue(Clock*); // Check the blocked queue
 
 
 

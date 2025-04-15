@@ -6,6 +6,8 @@
 #include "Pcb.h"         
 #include "Message.h"       
 
+#define QUANTUM_BASE 10000000
+
 volatile sig_atomic_t timeout_flag = 0; // Flag to indicate timeout
 volatile sig_atomic_t timer_tick = 0; // Flag to indicate timer tick
 Message buf; // Message buffer
@@ -26,6 +28,7 @@ int priority_queue[MAX_PCB]; // Queue for worker priorities
 int priority_queue_size = 0; // Size of the priority queue
 Shared_Clock shared_clock(SHMKEY, true);
 Clock* clock = NULL;
+
 
 // Main function
 int main(int argc, char** argv) {
