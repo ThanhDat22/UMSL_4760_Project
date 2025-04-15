@@ -24,8 +24,8 @@ int queue_size = 0; // Size of the scheduling queue
 int queue_front = 0; // Front of the queue
 int queue_rear = 0; // Rear of the queue
 
-int priority_queue[MAX_PCB]; // Queue for worker priorities
-int priority_queue_size = 0; // Size of the priority queue
+int pcb_priority_queue[MAX_PCB]; // Queue for worker priorities
+int pcb_priority_queue_size = 0; // Size of the priority queue
 Shared_Clock shared_clock(SHMKEY, true);
 Clock* sysclock = NULL;
 
@@ -384,7 +384,7 @@ void schedule_workers() {
                 return;
             }
 
-            handle_worker_response(wid, msg, clock);
+            handle_worker_response(wid, msg, sysclock);
             break; // Only one per cycle
         }
     }
@@ -466,55 +466,55 @@ void cleanup_and_exit() {
 
 // Insert a worker into the priority queue based on its priority
 void insert_into_priority_queue(int worker_id) {
-    if (priority_queue_size < MAX_PCB) {
-        int i = priority_queue_size;
+    if (pcb_priority_queue_size < MAX_PCB) {
+        int i = pcb_priority_queue_size;
 
         // Insert at the end and bubble up based on priority
-        while (i > 0 && pcb[priority_queue[(i - 1) / 2]].priority > pcb[worker_id].priority) {
-            priority_queue[i] = priority_queue[(i - 1) / 2];
+        while (i > 0 && pcb[pcb_priority_queue[(i - 1) / 2]].priority > pcb[worker_id].priority) {
+            pcb_priority_queue[i] = pcb_priority_queue[(i - 1) / 2];
             i = (i - 1) / 2;
         }
 
-        priority_queue[i] = worker_id;
-        priority_queue_size++;
+        pcb_priority_queue[i] = worker_id;
+        pcb_priority_queue_size++;
     }
 }
 
 // Pop the worker with the highest priority from the priority queue
 int pop_from_priority_queue() {
-    if (priority_queue_size == 0) {
+    if (pcb_priority_queue_size == 0) {
         return -1; // Queue is empty
     }
 
-    int result = priority_queue[0];
-    priority_queue_size--;
+    int result = pcb_priority_queue[0];
+    pcb_priority_queue_size--;
 
     // Restore heap order
-    int last = priority_queue[priority_queue_size];
+    int last = pcb_priority_queue[pcb_priority_queue_size];
     int i = 0;
-    while (i * 2 + 1 < priority_queue_size) {
+    while (i * 2 + 1 < pcb_priority_queue_size) {
         int child = i * 2 + 1;
-        if (child + 1 < priority_queue_size && 
-            pcb[priority_queue[child + 1]].priority < pcb[priority_queue[child]].priority) {
+        if (child + 1 < pcb_priority_queue_size && 
+            pcb[pcb_priority_queue[child + 1]].priority < pcb[pcb_priority_queue[child]].priority) {
             child++;
         }
-        if (pcb[last].priority <= pcb[priority_queue[child]].priority) {
+        if (pcb[last].priority <= pcb[pcb_priority_queue[child]].priority) {
             break;
         }
-        priority_queue[i] = priority_queue[child];
+        pcb_priority_queue[i] = pcb_priority_queue[child];
         i = child;
     }
 
-    priority_queue[i] = last;
+    pcb_priority_queue[i] = last;
     return result;
 }
 
 // Peek at the worker with the highest priority in the priority queue without removing it
 int peek_priority_queue() {
-    if (priority_queue_size == 0) {
+    if (pcb_priority_queue_size == 0) {
         return -1;
     }
-    return priority_queue[0];
+    return pcb_priority_queue[0];
 }
 
 void handle_worker_response(int wid, Message& msg, Clock* sysclock) {
