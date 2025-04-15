@@ -7,7 +7,7 @@
 
 #include "Shared_Clock.h"
 #include "Pcb.h"         // For Process Control Block (PCB) structure
-#include "Oss.h"          // For PCB structure and process table
+//#include "Oss.h"          // For PCB structure and process table
 
 #include <sys/ipc.h>    // For IPC key
 #include <sys/msg.h>   // For message queue
