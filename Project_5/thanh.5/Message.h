@@ -5,6 +5,9 @@
 #ifndef MESSAGE_H
 #define MESSAGE_H
 
+#define MSG_QUEUE_KEY_PATH "msgqueue.key"
+#define MSG_QUEUE_KEY_ID 42
+
 const int MAX_RESOURCES = 5;
 const int MAX_INSTANCES = 10;
 const int MAX_PROCESSES = 18;
