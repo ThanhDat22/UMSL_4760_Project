@@ -109,3 +109,8 @@ void User::run() {
     detach_clock(clock);
 }
 
+int main() {
+    User user;
+    user.run();
+    return 0;
+}

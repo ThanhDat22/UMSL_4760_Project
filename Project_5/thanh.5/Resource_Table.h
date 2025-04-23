@@ -6,7 +6,11 @@
 #define RESOURCE_TABLE_H
 
 #include "Message.h"
+
 #include <cstdlib>
+#include <iomanip>
+
+
 
 struct Resource_info {
     int total_instances; // Total number of instances of the resource
@@ -27,6 +31,7 @@ public:
     void release_all_resources(int);
     bool check_safety(int, int) const;
     const resource_info* get_resource_info(int) const;
+    void log_resources(ostream&) const;
 
 
 
