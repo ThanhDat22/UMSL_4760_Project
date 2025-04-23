@@ -271,3 +271,33 @@ int main(int argc, char* argv[]) {
     oss.run();
     return 0;
 }
+
+void Oss::cleanup() {
+    // Detach shared clock
+    if (clock) {
+        detach_clock(clock);
+        clock = NULL;
+    }
+
+    // Remove shared memory segment
+    if (shm_id != -1) {
+        shmctl(shm_id, IPC_RMID, NULL);
+        shm_id = -1;
+    }
+
+    // Remove message queue
+    if (msg_q_id != -1) {
+        msgctl(msg_q_id, IPC_RMID, NULL);
+        msg_q_id = -1;
+    }
+
+    // Terminate any still-active user processes
+    for (pid_t pid : active_users) {
+        kill(pid, SIGTERM);
+        waitpid(pid, NULL, 0); // Clean up
+    }
+    active_users.clear();
+
+    log_file << "OSS cleanup complete at time "
+             << clock->seconds << ":" << clock->nanoseconds << "\n";
+}
