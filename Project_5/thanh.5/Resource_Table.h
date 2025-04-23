@@ -9,8 +9,9 @@
 
 #include <cstdlib>
 #include <iomanip>
+#include <iostream>
 
-
+using std::ostream;
 
 struct Resource_info {
     int total_instances; // Total number of instances of the resource
