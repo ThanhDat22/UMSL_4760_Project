@@ -76,3 +76,42 @@ void Resource_Table::release_all_resources(int pid_index) {
 const Resource_info* Resource_Table::get_resource_info(int resource_id) const {
     return &resources[resource_id];
 }
+
+/** @brief Log the state of the resource table to the output stream
+    @param out : The output stream to log the resource table state 
+ */
+ void Resource_Table::log_resources(std::ostream& out) const {
+    out << "\nRESOURCE TABLE STATE (P = process, R = resource):\n";
+
+    // Header row
+    out << std::setw(5) << " " ;
+    for (int r = 0; r < MAX_RESOURCES; ++r) {
+        out << "R" << r << std::setw(6);
+    }
+    out << "\n";
+
+    // One row per process
+    for (int p = 0; p < MAX_PROCESSES; ++p) {
+        bool has_allocation = false;
+        for (int r = 0; r < MAX_RESOURCES; ++r) {
+            if (resources[r].allocation[p] > 0) {
+                has_allocation = true;
+                break;
+            }
+        }
+        if (!has_allocation) continue; // Skip processes with zero allocation
+
+        out << "P" << std::setw(3) << p << ": ";
+        for (int r = 0; r < MAX_RESOURCES; ++r) {
+            out << std::setw(4) << resources[r].allocation[p] << " ";
+        }
+        out << "\n";
+    }
+
+    // Print available resources at the bottom
+    out << "\nAvailable Instances:\n";
+    for (int r = 0; r < MAX_RESOURCES; ++r) {
+        out << "R" << r << ": " << resources[r].available_instances << "  ";
+    }
+    out << "\n\n";
+}
