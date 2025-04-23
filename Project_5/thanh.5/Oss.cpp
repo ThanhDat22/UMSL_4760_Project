@@ -11,10 +11,19 @@
 
 
 
-Oss::Oss(int max_users, int max_seconds, int launch_interval, const std::string& logfile_name)
-    : msg_queue_id(-1), shm_id(-1), clock(nullptr),
+Oss::Oss(int max_users, int max_seconds, int launch_interval, const string& logfile_name)
+    : msg_q_id(-1), shm_id(-1), clock(NULL),
       max_user(max_users), max_simulation_seconds(max_seconds),
       launch_interval_ns(launch_interval * 1000000ULL), log_file_name(logfile_name) {
+
+    // Open log file
+    log_file.open(log_file_name.c_str(), std::ios::out | std::ios::trunc);
+    if (!log_file.is_open()) {
+        cerr << "Failed to open log file: " << log_file_name << endl;
+        exit(1);
+    }  
+    
+
     srand(time(NULL));
     setup_ipc();
 }
@@ -49,19 +58,15 @@ void Oss::setup_ipc() {
         exit(1);
     }
 
-    msg_queue_id = msgget(key, IPC_CREAT | 0666);
-    if (msg_queue_id == -1) {
+    msg_q_id = msgget(key, IPC_CREAT | 0666);
+    if (msg_q_id == -1) {
         perror("msgget failed");
         exit(1);
     }
 
     srand(time(NULL));
 
-    log_file.open("logfile", std::ios::out | std::ios::trunc);
-    if (!log_file) {
-        cerr << "Failed to open logfile\n";
-        exit(1);
-    }
+    
 }
 
 
@@ -89,7 +94,7 @@ void Oss::launch_user() {
 
 void Oss::handle_message() {
     Message msg;
-    while (msgrcv(msg_queue_id, &msg, sizeof(Message) - sizeof(long), 1, IPC_NOWAIT) > 0) {
+    while (msgrcv(msg_q_id, &msg, sizeof(Message) - sizeof(long), 1, IPC_NOWAIT) > 0) {
         int index = msg.pid % MAX_PROCESSES;
         int rid = msg.resource_id;
 
@@ -142,7 +147,7 @@ void Oss::handle_message() {
 
         // Unblock user
         msg.mtype = msg.pid;
-        msgsnd(msg_queue_id, &msg, sizeof(Message) - sizeof(long), 0);
+        msgsnd(msg_q_id, &msg, sizeof(Message) - sizeof(long), 0);
     }
 }
 
@@ -230,7 +235,7 @@ void Oss::process_wait_queues() {
                 msg.pid = pid_index;
                 msg.action = 1; // request granted
                 msg.resource_id = r;
-                msgsnd(msg_queue_id, &msg, sizeof(Message) - sizeof(long), 0);
+                msgsnd(msg_q_id, &msg, sizeof(Message) - sizeof(long), 0);
 
                 it = queue.erase(it); // remove from wait queue
             } else {

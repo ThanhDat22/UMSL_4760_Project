@@ -2,7 +2,7 @@
 
 
 
-User::User() : clock(nullptr), shm_id(-1), msg_queue_id(-1) {
+User::User() : clock(NULL), shm_id(-1), msg_queue_id(-1) {
     srand(getpid() + time(NULL));
     pid_index = getpid() % MAX_PROCESSES; // map PID to process table index (simple)
     init();

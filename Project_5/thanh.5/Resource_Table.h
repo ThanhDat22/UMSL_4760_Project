@@ -30,7 +30,7 @@ public:
     void release_resource(int, int);
     void release_all_resources(int);
     bool check_safety(int, int) const;
-    const resource_info* get_resource_info(int) const;
+    const Resource_info* get_resource_info(int) const;
     void log_resources(ostream&) const;
 
 
