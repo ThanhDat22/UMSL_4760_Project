@@ -124,7 +124,7 @@ void Oss::handle_message() {
                          << " releasing R" << rid << " at time "
                          << clock->seconds << ":" << clock->nanoseconds << "\n";
                 log_file << "  Resources released : R" << rid << ":1\n";
-                process_wait_queue(); // Check if any processes can be unblocked
+                process_wait_queues(); // Check if any processes can be unblocked
                 break;
             }
 
@@ -140,7 +140,7 @@ void Oss::handle_message() {
 
                 resource_table.release_all_resources(index);
                 active_users.erase(std::remove(active_users.begin(), active_users.end(), msg.pid), active_users.end()); 
-                process_wait_queue(); // Check if any processes can be unblocked
+                process_wait_queues(); // Check if any processes can be unblocked
                 break;
             }
         }
