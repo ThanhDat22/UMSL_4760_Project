@@ -39,7 +39,7 @@ private:
     int max_simulation_seconds; // Maximum simulation time in seconds
     unsigned long long launch_interval_ns; // Launch interval in nanoseconds
     string log_file_name; // Log file name
-    
+
     Resource_Table resource_table; 
     vector<pid_t> active_users; // Vector to store active user PIDs
     vector<int> wait_queue[MAX_RESOURCES]; // Wait queues for each resource
@@ -50,7 +50,7 @@ private:
     void handle_message();
     void check_deadlock();
     void log_state();
-    void process_wait_queue();
+    void process_wait_queues();
     void cleanup();
 };
 
