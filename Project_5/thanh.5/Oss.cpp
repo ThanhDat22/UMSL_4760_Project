@@ -152,16 +152,42 @@ void Oss::handle_message() {
 }
 
 void Oss::check_deadlock() {
+    log_file << "Master running deadlock detection at time "
+             << clock->seconds << ":" << clock->nanoseconds << "\n";
+
     int deadlocked[MAX_PROCESSES];
     int count = detect_deadlock(resource_table, deadlocked);
 
-    for (int i = 0; i < count; ++i) {
-        pid_t victim = active_users[deadlocked[i]];
-        kill(victim, SIGTERM);
-        resource_table.release_all_resources(deadlocked[i]);
-        active_users.erase(remove(active_users.begin(), active_users.end(), victim), active_users.end());
+    if (count > 0) {
+        log_file << "Processes ";
+        for (int i = 0; i < count; ++i) {
+            log_file << "P" << deadlocked[i];
+            if (i < count - 1) log_file << ", ";
+        }
+        log_file << " deadlocked\n";
 
-        cout << "Deadlock: Killed user with PID " << victim << "\n";
+        // Terminate one at a time
+        int victim_index = deadlocked[0];
+        pid_t victim_pid = active_users[victim_index];
+        log_file << "Master terminating P" << victim_index << " to resolve deadlock\n";
+
+        kill(victim_pid, SIGTERM);
+        waitpid(victim_pid, NULL, 0);
+
+        log_file << "Process P" << victim_index << " terminated\n";
+        log_file << "  Resources released: ";
+        for (int r = 0; r < MAX_RESOURCES; ++r) {
+            int released = resource_table.get_resource_info(r)->allocation[victim_index];
+            if (released > 0)
+                log_file << "R" << r << ":" << released << " ";
+        }
+        log_file << "\n";
+
+        resource_table.release_all_resources(victim_index);
+        active_users.erase(std::remove(active_users.begin(), active_users.end(), victim_pid), active_users.end());
+        process_wait_queues();
+    } else {
+        log_file << "No deadlocks detected.\n";
     }
 }
 
