@@ -1,6 +1,6 @@
 # Compiler and flags
 CXX = g++
-CXXFLAGS = -Wall -std=c++98
+CXXFLAGS = -Wall -g
 
 # Source files
 OSS_SRC = Oss.cpp Shared_Clock.cpp Resource_Table.cpp Deadlock.cpp
