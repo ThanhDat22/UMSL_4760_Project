@@ -20,7 +20,8 @@ struct Message {
     long mtype; // Message type
     pid_t pid; // Process ID of the sender
     int action; //MSG_TYPE
-    int resource_id; 
+    int memory_address; // Memory address of the message
+    int operation; 
 };
 
 
