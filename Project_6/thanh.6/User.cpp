@@ -15,7 +15,7 @@ void User::init() {
         exit(1);
     }
 
-    std::cout << "[DEBUG] User attached to shared clock at address: " << clock << "\n";
+    //std::cout << "[DEBUG] User attached to shared clock at address: " << clock << "\n";
 
     // Ensure key file exists for ftok
     int fd = open(MSG_QUEUE_KEY_PATH, O_CREAT | O_RDWR, 0666);
@@ -118,7 +118,7 @@ int User::generate_random_address() {
 
     int page_aligned_address = (address / PAGE_SIZE) * PAGE_SIZE;
     
-    std::cout << "[DEBUG] Generated Address: " << page_aligned_address << " (Max allowed: " << max_address << ")\n";
+    //std::cout << "[DEBUG] Generated Address: " << page_aligned_address << " (Max allowed: " << max_address << ")\n";
 
     return page_aligned_address;
 }

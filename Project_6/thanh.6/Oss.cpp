@@ -42,7 +42,7 @@ void Oss::setup_ipc() {
         cerr << "OSS failed to attach to clock\n";
         exit(1);
     } else {
-        std::cout << "[DEBUG] OSS attached to shared clock at address: " << shared_clock << "\n";
+        //std::cout << "[DEBUG] OSS attached to shared clock at address: " << shared_clock << "\n";
     }
 
     frame_table.set_shared_clock(shared_clock); // Link frame table to shared clock
@@ -113,11 +113,11 @@ void Oss::handle_message() {
     int page_number = msg.memory_address / PAGE_SIZE;  // Calculate the page number
     bool is_write = (msg.operation == 1); // 1 = write, 0 = read
 
-    std::cout << "[DEBUG] OSS received address: " << msg.memory_address << "\n";
-    std::cout << "[DEBUG] Calculated page number: " << page_number << "\n";
+    //std::cout << "[DEBUG] OSS received address: " << msg.memory_address << "\n";
+    //std::cout << "[DEBUG] Calculated page number: " << page_number << "\n";
 
     if (msg.memory_address < 0 || msg.memory_address >= TOTAL_FRAMES * PAGE_SIZE) {
-        std::cerr << "ERROR: Memory address " << msg.memory_address << " is out of bounds!\n";
+        //std::cerr << "ERROR: Memory address " << msg.memory_address << " is out of bounds!\n";
         exit(1);
     }
 
@@ -250,7 +250,7 @@ void Oss::process_wait_queues() {
                          << " access to page " << page_number 
                          << " at frame " << frame
                          << " at time " << shared_clock->seconds << ":"
-                         << std::setw(9) << std::setfill('0') << shared_clock->nanoseconds << "\n";
+                         << setw(9) << setfill('0') << shared_clock->nanoseconds << "\n";
 
                 // Send grant message to unblock the user
                 Message msg;

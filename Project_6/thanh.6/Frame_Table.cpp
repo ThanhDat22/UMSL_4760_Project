@@ -24,7 +24,7 @@ const Frame& Frame_Table::get_frame(int index) const {
 
 int Frame_Table::request_frame(int pid, int page_number, bool write) {
 
-    std::cout << "[DEBUG] Requesting frame for PID " << pid << " at page number " << page_number << "\n";
+    //std::cout << "[DEBUG] Requesting frame for PID " << pid << " at page number " << page_number << "\n";
 
     if (page_number < 0 || page_number >= TOTAL_FRAMES) {
         cerr << "ERROR: Page number " << page_number << " is out of bounds!\n";
@@ -32,7 +32,7 @@ int Frame_Table::request_frame(int pid, int page_number, bool write) {
     }
 
     if (!shared_clock) {
-        std::cerr << "ERROR: shared_clock is NULL when accessing Frame_Table!\n";
+        //std::cerr << "ERROR: shared_clock is NULL when accessing Frame_Table!\n";
         exit(1);
     }
 
@@ -44,7 +44,7 @@ int Frame_Table::request_frame(int pid, int page_number, bool write) {
             frames[i].dirty_bit = write;
             frames[i].last_access_time = (this->shared_clock->seconds * 1000000000ULL) + this->shared_clock->nanoseconds;
             eviction_flag = false;
-            std::cout << "[DEBUG] Frame " << i << " allocated to page " << page_number << "\n";
+            //std::cout << "[DEBUG] Frame " << i << " allocated to page " << page_number << "\n";
             return i;
         }
     }
@@ -55,7 +55,7 @@ int Frame_Table::request_frame(int pid, int page_number, bool write) {
 
     // Check boundary
     if (page_number >= TOTAL_FRAMES) {
-        std::cerr << "ERROR: Page number " << page_number << " is out of bounds!\n";
+        //std::cerr << "ERROR: Page number " << page_number << " is out of bounds!\n";
         exit(1);
     }
 
@@ -127,9 +127,9 @@ EvictionInfo Frame_Table::get_last_eviction() {
 
 void Frame_Table::set_shared_clock(Shared_Clock* shared_clock) {
     if (shared_clock == nullptr) {
-        std::cerr << "ERROR: Attempting to set shared_clock to NULL!\n";
+        //std::cerr << "ERROR: Attempting to set shared_clock to NULL!\n";
         exit(1);
     }
     this->shared_clock = shared_clock;
-    std::cout << "[DEBUG] Frame_Table linked to shared clock at address: " << this->shared_clock << "\n";
+    //std::cout << "[DEBUG] Frame_Table linked to shared clock at address: " << this->shared_clock << "\n";
 }
