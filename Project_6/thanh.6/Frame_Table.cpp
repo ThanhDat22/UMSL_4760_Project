@@ -86,7 +86,7 @@ void Frame_Table::release_frame(int pid) {
 
 void Frame_Table::display_frame_table() {
     cout << "------------- Frame Table State --------------\n";
-    for (int i = 0; i < (int)(frames.size(); ++i)) {
+    for (int i = 0; i < (int)(frames.size()); ++i) {
         if (frames[i].pid != -1) {
             cout << "Frame " << i 
                       << " | PID: " << frames[i].pid 
