@@ -125,11 +125,11 @@ EvictionInfo Frame_Table::get_last_eviction() {
     return last_eviction;
 }
 
-void Frame_Table::set_shared_clock() {
-    shared_clock = ::shared_clock;
-    if (!this->shared_clock) {
-        std::cerr << "ERROR: shared_clock is still NULL after set_shared_clock!\n";
+void Frame_Table::set_shared_clock(Shared_Clock* shared_clock) {
+    if (shared_clock == nullptr) {
+        std::cerr << "ERROR: Attempting to set shared_clock to NULL!\n";
         exit(1);
     }
+    this->shared_clock = shared_clock;
     std::cout << "[DEBUG] Frame_Table linked to shared clock at address: " << this->shared_clock << "\n";
 }

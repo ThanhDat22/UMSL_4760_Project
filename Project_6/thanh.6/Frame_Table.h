@@ -31,7 +31,7 @@ struct Frame {
 class Frame_Table {
 public:
     Frame_Table();
-    void set_shared_clock();
+    void set_shared_clock(Shared_Clock*); // Set the shared clock
     const Frame& get_frame(int index) const;
     int request_frame(int, int, bool); // Request a frame for a process
     void release_frame(int); // Release a frame for a process
