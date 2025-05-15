@@ -1,10 +1,15 @@
-# **Resource Management**
+# **Paging**
 
 ## **Description**
 
 - This project is about resource management inside an operating system. 
 - The multiple user processes through shared memory and a message queue. 
-- It tracks time using a shared clock and manages resource allocation while avoiding and resolving deadlocks. 
+- Multiple user processes interact through shared memory and message queues to request 
+  - read and write access to memory pages
+  - page fault handling for memeory not currently loaded
+  - page eviction strategy when frames are full
+  - frame table management
+  
 
 ## **Compilation**
 
@@ -37,12 +42,16 @@ make clean
 
 ### What was done
 
-- Shared system clock using shared memory
-- Process creation via fork/exec
-- Interprocess communication via System V message queues
-- Random resource requests and releases form users
-- Wait queue for blocked request
-- Deadlock detection and recovery using Banker's algorithm
-- Detailed logging to logfile
-- Configurable runtime and logging
-- Clean up shared memory and message queue.
+- Shared System Clock: Global time synchronization using shared memory.
+- Process Creation and Management: User processes are spawned and managed with fork/exec.
+- Interprocess Communication: System V Message Queues for signaling between OSS and users.
+- Frame Table Management: Efficient page tracking and mapping to physical frames.
+- Page Fault Handling: Triggers when a requested page is not currently in memory.
+- Page Replacement Strategy: Uses LRU (Least Recently Used) for eviction when memory is full.
+- Memory Access Logging: Detailed logs of:
+    . Memory requests (READ or WRITE)
+    . Page faults
+    . Evictions from memory
+    . Frame allocations
+- Configurable Runtime: You can adjust the number of users, concurrency, and interval of launches.
+- Cleanup Logic: Ensures all shared memory, message queues, and process states are cleaned up on exit.
