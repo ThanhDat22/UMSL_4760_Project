@@ -44,7 +44,7 @@ private:
 
     Frame_Table frame_table; 
     vector<pid_t> active_users; // Vector to store active user PIDs
-    vector<int> wait_queue[MAX_RESOURCES]; // Wait queues for each resource
+   vector<pair<bool, int>> wait_queue[MAX_PROCESSES];
 
     // Private methods
     void setup_ipc();

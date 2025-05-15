@@ -155,13 +155,29 @@ void Oss::handle_message() {
 
 
 void Oss::log_state() {
-    log_file << "OSS State at " << clock->seconds << "s " << clock->nanoseconds << "ns\n";
+    log_file << "================== OSS State ==================\n";
+    log_file << "Time: " << clock->seconds << "s " << clock->nanoseconds << "ns\n";
+
+    // Display Active Users
     log_file << "Active Users: ";
     for (pid_t pid : active_users) {
         log_file << pid << " ";
     }
     log_file << "\n";
-    resource_table.log_resources(log_file);
+
+    // Display the Frame Table status
+    log_file << "------------- Frame Table State --------------\n";
+    for (int i = 0; i < TOTAL_FRAMES; ++i) {
+        const Frame& frame = frame_table.get_frame(i);
+        if (frame.pid != -1) {
+            log_file << "Frame " << i 
+                     << " | PID: " << frame.pid 
+                     << " | Page: " << frame.page_number 
+                     << " | Dirty: " << frame.dirty_bit 
+                     << " | Last Access: " << frame.last_access_time << "\n";
+        }
+    }
+    log_file << "=============================================\n\n";
 }
 
 
@@ -207,17 +223,18 @@ void Oss::run() {
 void Oss::process_wait_queues() {
     for (int p = 0; p < MAX_PROCESSES; ++p) {
         auto& queue = wait_queue[p];
+
         for (auto it = queue.begin(); it != queue.end();) {
-            int pid_index = *it;
+            bool is_write = it->first;        // First value in the pair is the write flag
+            int memory_address = it->second;  // Second value in the pair is the memory address
+            int page_number = memory_address / PAGE_SIZE;
 
-            int page_number = it->second / PAGE_SIZE;  // Get the page number
-            bool is_write = it->first; // First value in the pair is the write flag
-
-            int frame = frame_table.request_frame(pid_index, page_number, is_write);
+            // Try to allocate a frame for this process
+            int frame = frame_table.request_frame(p, page_number, is_write);
 
             if (frame != -1) {
-                // Log successful memory allocation
-                log_file << "Master granting P" << pid_index
+                // Log successful allocation
+                log_file << "Master granting P" << p
                          << " access to page " << page_number 
                          << " at frame " << frame
                          << " at time " << clock->seconds << ":"
@@ -225,8 +242,8 @@ void Oss::process_wait_queues() {
 
                 // Send grant message to unblock the user
                 Message msg;
-                msg.mtype = pid_index;  // mtype = pid_index to match msgrcv in user
-                msg.pid = pid_index;
+                msg.mtype = p;  // mtype = pid_index to match msgrcv in user
+                msg.pid = p;
                 msg.action = 1; // request granted
                 msg.memory_address = page_number * PAGE_SIZE;
                 msg.operation = is_write ? 1 : 0;
@@ -239,7 +256,7 @@ void Oss::process_wait_queues() {
 
                 it = queue.erase(it); // Remove from wait queue
             } else {
-                ++it; // Still cannot grant
+                ++it; // Still cannot grant, move to next
             }
         }
     }
