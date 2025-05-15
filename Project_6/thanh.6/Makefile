@@ -1,6 +1,6 @@
 # Compiler and flags
 CXX = g++
-CXXFLAGS = -Wall -g -o
+CXXFLAGS = -Wall -g
 
 # Executables
 TARGETS = oss user
