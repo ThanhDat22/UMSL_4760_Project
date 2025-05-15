@@ -41,6 +41,8 @@ void Oss::setup_ipc() {
     if (!shared_clock) {
         cerr << "OSS failed to attach to clock\n";
         exit(1);
+    } else {
+        std::cout << "[DEBUG] OSS attached to shared clock at address: " << shared_clock << "\n";
     }
 
     // Create message queue

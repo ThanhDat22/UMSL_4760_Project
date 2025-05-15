@@ -33,6 +33,12 @@ int Frame_Table::request_frame(int pid, int page_number, bool write) {
         exit(1);
     }
 
+    if (!shared_clock) {
+        std::cerr << "ERROR: shared_clock is NULL when accessing Frame_Table!\n";
+        exit(1);
+    }
+
+
     for (int i = 0; i < TOTAL_FRAMES; ++i) {
         if (frames[i].pid == -1) {
             frames[i].pid = pid;
