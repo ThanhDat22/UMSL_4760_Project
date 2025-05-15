@@ -110,6 +110,10 @@ void User::send_termination() {
     }
 }
 
+int User::generate_random_address() {
+    return (rand() % 128000);
+}
+
 int main() {
     User user;
     user.run();
