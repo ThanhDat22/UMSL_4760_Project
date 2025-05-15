@@ -19,7 +19,7 @@ const Frame& Frame_Table::get_frame(int index) const {
     if (index >= 0 && index < frames.size()) {
         return frames[index];
     } else {
-        std::cerr << "Error: Frame index out of bounds: " << index << std::endl;
+        cerr << "Error: Frame index out of bounds: " << index << endl;
         exit(1);
     }
 }
@@ -85,17 +85,19 @@ void Frame_Table::release_frame(int pid) {
 
 
 void Frame_Table::display_frame_table() {
-    cout << "Frame Table State:\n";
+    cout << "------------- Frame Table State --------------\n";
     for (int i = 0; i < frames.size(); ++i) {
         if (frames[i].pid != -1) {
-            cout << "Frame " << i << ": PID = " << frames[i].pid
-                      << ", Page Number = " << frames[i].page_number
-                      << ", Dirty Bit = " << frames[i].dirty_bit
-                      << ", Last Access Time = " << frames[i].last_access_time << "\n";
+            cout << "Frame " << i 
+                      << " | PID: " << frames[i].pid 
+                      << " | Page: " << frames[i].page_number 
+                      << " | Dirty: " << frames[i].dirty_bit 
+                      << " | Last Access Time: " << frames[i].last_access_time << "\n";
         } else {
             cout << "Frame " << i << ": Free\n";
         }
     }
+    cout << "---------------------------------------------\n";
 }
 
 bool Frame_Table::evict_occurred() {
