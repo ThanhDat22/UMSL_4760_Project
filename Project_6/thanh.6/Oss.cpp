@@ -169,11 +169,10 @@ void Oss::log_state() {
 void Oss::run() {
     int total_spawned = 0;
     unsigned long long next_launch_ns = 0;
-    unsigned long long next_deadlock_ns = 1000000000;
-    unsigned long long next_log_ns = 500000000;
+    unsigned long long next_log_ns = 500000000; // Log every 0.5s
 
     while (total_spawned < MAX_USER || !active_users.empty()) {
-        // Advance clock
+
         clock->nanoseconds += 10000;
         if (clock->nanoseconds >= 1000000000) {
             clock->seconds++;
@@ -187,48 +186,60 @@ void Oss::run() {
         if (total_spawned < MAX_USER && active_users.size() < MAX_ACTIVE && current_ns >= next_launch_ns) {
             launch_user();
             total_spawned++;
-            next_launch_ns = current_ns + 50000000; // next launch in 50ms
+            next_launch_ns = current_ns + 50000000; // Launch next user in 50ms
         }
 
         if (current_ns >= next_log_ns) {
             log_state();
+            frame_table.display_frame_table(); // Display the current frame table
             next_log_ns += 500000000;
         }
 
-        if (current_ns >= next_deadlock_ns) {
-            check_deadlock();
-            next_deadlock_ns += 1000000000;
-        }
-
-        // Clean up any zombie children
         int status;
         while (waitpid(-1, &status, WNOHANG) > 0);
 
         usleep(10000); // sleep for realism
     }
+
+    cleanup();
 }
 
 void Oss::process_wait_queues() {
-    for (int r = 0; r < MAX_RESOURCES; ++r) {
-        auto& queue = wait_queue[r];
+    for (int p = 0; p < MAX_PROCESSES; ++p) {
+        auto& queue = wait_queue[p];
         for (auto it = queue.begin(); it != queue.end();) {
             int pid_index = *it;
-            if (resource_table.request_resource(pid_index, r)) {
+
+            int page_number = it->second / PAGE_SIZE;  // Get the page number
+            bool is_write = it->first; // First value in the pair is the write flag
+
+            int frame = frame_table.request_frame(pid_index, page_number, is_write);
+
+            if (frame != -1) {
+                // Log successful memory allocation
                 log_file << "Master granting P" << pid_index
-                         << " previously blocked request R" << r
-                         << " at time " << clock->seconds << ":" << clock->nanoseconds << "\n";
+                         << " access to page " << page_number 
+                         << " at frame " << frame
+                         << " at time " << clock->seconds << ":"
+                         << std::setw(9) << std::setfill('0') << clock->nanoseconds << "\n";
 
                 // Send grant message to unblock the user
                 Message msg;
                 msg.mtype = pid_index;  // mtype = pid_index to match msgrcv in user
                 msg.pid = pid_index;
                 msg.action = 1; // request granted
-                msg.resource_id = r;
-                msgsnd(msg_q_id, &msg, sizeof(Message) - sizeof(long), 0);
+                msg.memory_address = page_number * PAGE_SIZE;
+                msg.operation = is_write ? 1 : 0;
 
-                it = queue.erase(it); // remove from wait queue
+                // Send the message back to the user
+                if (msgsnd(msg_q_id, &msg, sizeof(Message) - sizeof(long), 0) == -1) {
+                    perror("msgsnd failed");
+                    exit(1);
+                }
+
+                it = queue.erase(it); // Remove from wait queue
             } else {
-                ++it; // still cannot grant
+                ++it; // Still cannot grant
             }
         }
     }
