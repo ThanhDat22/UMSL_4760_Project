@@ -216,7 +216,7 @@ void Oss::run() {
 
     while (total_spawned < MAX_USER || !active_users.empty()) {
 
-        shared_clock->nanoseconds += 10000;
+        shared_clock->nanoseconds += 1000000;
         if (shared_clock->nanoseconds >= 1000000000) {
             shared_clock->seconds++;
             shared_clock->nanoseconds -= 1000000000;
@@ -252,7 +252,7 @@ void Oss::run() {
         }
 
 
-        usleep(10000); // sleep for realism
+        usleep(5000); // sleep for realism
     }
 
     cleanup();
