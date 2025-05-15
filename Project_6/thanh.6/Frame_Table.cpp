@@ -15,6 +15,13 @@ Frame_Table::Frame_Table() {
     }
 }
 
+if (index >= 0 && index < frames.size()) {
+        return frames[index];
+    } else {
+        cerr << "Error: Frame index out of bounds: " << index << endl;
+        exit(1);
+    }
+
 int Frame_Table::request_frame(int pid, int page_number, bool write) {
     for (int i = 0; i < TOTAL_FRAMES; ++i) {
         if (frames[i].pid == -1) { // Find a free frame

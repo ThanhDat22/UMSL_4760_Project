@@ -7,6 +7,7 @@
 #include <map>
 #include <iostream>
 
+
 using std::vector;
 using std::map;
 
@@ -30,6 +31,7 @@ struct Frame {
 class Frame_Table {
 public:
     Frame_Table();
+    const Frame& get_frame(int index) const;
     int request_frame(int, int, bool); // Request a frame for a process
     void release_frame(int); // Release a frame for a process
     void display_frame_table(); // Display the frame table
