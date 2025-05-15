@@ -230,6 +230,7 @@ void Oss::run() {
             launch_user();
             total_spawned++;
             next_launch_ns = current_ns + 50000000; // Launch next user in 50ms
+            std::cout << "[DEBUG] Launched User, total: " << total_spawned << "\n";
         }
 
         if (current_ns >= next_log_ns) {
@@ -239,7 +240,17 @@ void Oss::run() {
         }
 
         int status;
-        while (waitpid(-1, &status, WNOHANG) > 0);
+        pid_t pid;
+        while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
+            std::cout << "[DEBUG] Reaped zombie process with PID: " << pid << "\n";
+            active_users.erase(std::remove(active_users.begin(), active_users.end(), pid), active_users.end());
+        }
+
+        if (active_users.empty() && total_spawned >= MAX_USER) {
+            std::cout << "[DEBUG] All users have terminated. Exiting OSS.\n";
+            break; // Stop the loop if all users are finished
+        }
+
 
         usleep(10000); // sleep for realism
     }
