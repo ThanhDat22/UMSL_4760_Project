@@ -109,6 +109,9 @@ void Oss::handle_message() {
     int page_number = msg.memory_address / PAGE_SIZE;  // Calculate the page number
     bool is_write = (msg.operation == 1); // 1 = write, 0 = read
 
+    std::cout << "[DEBUG] OSS received address: " << msg.memory_address << "\n";
+    std::cout << "[DEBUG] Calculated page number: " << page_number << "\n";
+
     if (msg.memory_address < 0 || msg.memory_address >= TOTAL_FRAMES * PAGE_SIZE) {
         std::cerr << "ERROR: Memory address " << msg.memory_address << " is out of bounds!\n";
         exit(1);

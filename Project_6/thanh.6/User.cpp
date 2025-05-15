@@ -15,6 +15,8 @@ void User::init() {
         exit(1);
     }
 
+    std::cout << "[DEBUG] User attached to shared clock at address: " << clock << "\n";
+
     // Ensure key file exists for ftok
     int fd = open(MSG_QUEUE_KEY_PATH, O_CREAT | O_RDWR, 0666);
     if (fd == -1) {
