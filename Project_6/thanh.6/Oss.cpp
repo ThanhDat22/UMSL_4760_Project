@@ -119,7 +119,7 @@ void Oss::handle_message() {
                  << setw(9) << setfill('0') << shared_clock->nanoseconds << endl;
 
         frame_table.release_frame(index);  // Release all frames
-        active_users.erase(std::remove(active_users.begin(), active_users.end(), msg.pid), active_users.end());
+        active_users.erase(remove(active_users.begin(), active_users.end(), msg.pid), active_users.end());
 
         log_file << "Master has released all frames for Process P" << index << "\n";
 
@@ -129,7 +129,7 @@ void Oss::handle_message() {
     }
 
     if (msg.memory_address < 0 || msg.memory_address > TOTAL_FRAMES * PAGE_SIZE) {
-        std::cerr << "ERROR: Memory address " << msg.memory_address << " is out of bounds!\n";
+        cerr << "ERROR: Memory address " << msg.memory_address << " is out of bounds!\n";
         exit(1);
     }
 
@@ -230,7 +230,7 @@ void Oss::run() {
             launch_user();
             total_spawned++;
             next_launch_ns = current_ns + 50000000; // Launch next user in 50ms
-            std::cout << "[DEBUG] Launched User, total: " << total_spawned << "\n";
+            //std::cout << "[DEBUG] Launched User, total: " << total_spawned << "\n";
         }
 
         if (current_ns >= next_log_ns) {
@@ -242,13 +242,13 @@ void Oss::run() {
         int status;
         pid_t pid;
         while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
-            std::cout << "[DEBUG] Reaped zombie process with PID: " << pid << "\n";
-            active_users.erase(std::remove(active_users.begin(), active_users.end(), pid), active_users.end());
+            //std::cout << "[DEBUG] Reaped zombie process with PID: " << pid << "\n";
+            active_users.erase(remove(active_users.begin(), active_users.end(), pid), active_users.end());
         }
 
         if (active_users.empty() && total_spawned >= MAX_USER) {
-            std::cout << "[DEBUG] All users have terminated. Exiting OSS.\n";
-            break; // Stop the loop if all users are finished
+           //std::cout << "[DEBUG] All users have terminated. Exiting OSS.\n";
+           break; // Stop the loop if all users are finished
         }
 
 

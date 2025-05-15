@@ -45,8 +45,8 @@ void User::init() {
         termination_ns -= 1000000000;
     }
 
-    std::cout << "[DEBUG] User " << getpid() << " will terminate at: " 
-          << termination_sec << "s " << termination_ns << "ns\n";
+    // std::cout << "[DEBUG] User " << getpid() << " will terminate at: " 
+    //       << termination_sec << "s " << termination_ns << "ns\n";
 
     cout << "USER " << getpid() << " initialized. Terminate at "
               << termination_sec << "s " << termination_ns << "ns\n";
@@ -56,10 +56,10 @@ bool User::check_termination() {
     bool ter = (clock->seconds > termination_sec) ||
                             (clock->seconds == termination_sec && clock->nanoseconds >= termination_ns);
 
-    std::cout << "[DEBUG] User " << getpid() << " is checking termination at time "
-              << clock->seconds << ":" << clock->nanoseconds 
-              << " | Terminate at: " << termination_sec << ":" << termination_ns << " -> " 
-              << (ter ? "Yes" : "No") << std::endl;
+    // std::cout << "[DEBUG] User " << getpid() << " is checking termination at time "
+    //           << clock->seconds << ":" << clock->nanoseconds 
+    //           << " | Terminate at: " << termination_sec << ":" << termination_ns << " -> " 
+    //           << (ter ? "Yes" : "No") << std::endl;
     
     return ter;
 }
@@ -121,7 +121,7 @@ void User::send_termination() {
         perror("msgsnd failed");
         exit(1);
     }
-    std::cout << "[DEBUG] User " << getpid() << " sent termination message.\n";
+    //std::cout << "[DEBUG] User " << getpid() << " sent termination message.\n";
 }
 
 int User::generate_random_address() {
