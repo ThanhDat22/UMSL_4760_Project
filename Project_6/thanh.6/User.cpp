@@ -114,7 +114,11 @@ int User::generate_random_address() {
     int max_address = TOTAL_FRAMES * PAGE_SIZE - PAGE_SIZE;
     int address = (rand() % max_address);
 
-    return (address / PAGE_SIZE) * PAGE_SIZE;
+    int page_aligned_address = (address / PAGE_SIZE) * PAGE_SIZE;
+    
+    std::cout << "[DEBUG] Generated Address: " << page_aligned_address << " (Max allowed: " << max_address << ")\n";
+
+    return page_aligned_address;
 }
 
 int main() {
