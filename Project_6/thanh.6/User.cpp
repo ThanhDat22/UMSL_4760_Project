@@ -69,15 +69,6 @@ void User::request_memory(int address, bool is_write) {
     wait_for_grant();
 }
 
-void User::send_termination() {
-    Message msg;
-    msg.mtype = 1;
-    msg.pid = getpid();
-    msg.action = 3; // MSG_TYPE_TERMINATE
-    msg.resource_id = -1;
-
-    msgsnd(msg_queue_id, &msg, sizeof(Message) - sizeof(long), 0);
-}
 
 void User::wait_for_grant() {
     Message response;
@@ -113,7 +104,10 @@ void User::send_termination() {
     msg.action = 3; // MSG_TYPE_TERMINATE
     msg.memory_address = -1;
 
-    msgsnd(msg_queue_id, &msg, sizeof(Message) - sizeof(long), 0);
+   if (msgsnd(msg_queue_id, &msg, sizeof(Message) - sizeof(long), 0) == -1) {
+        perror("msgsnd failed");
+        exit(1);
+    }
 }
 
 int main() {
