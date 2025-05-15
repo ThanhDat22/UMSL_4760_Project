@@ -2,7 +2,7 @@
 #define OSS_H
 
 #include "Shared_Clock.h"
-#include "Resource_Table.h"
+#include "Frame_Table.h"
 #include "Message.h"
 
 #include <vector>
@@ -41,7 +41,7 @@ private:
     unsigned long long launch_interval_ns; // Launch interval in nanoseconds
     string log_file_name; // Log file name
 
-    Resource_Table resource_table; 
+    Frame_Table frame_table; 
     vector<pid_t> active_users; // Vector to store active user PIDs
     vector<int> wait_queue[MAX_RESOURCES]; // Wait queues for each resource
 

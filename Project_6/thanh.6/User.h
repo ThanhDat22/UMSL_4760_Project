@@ -29,10 +29,10 @@ private:
 
     void init();                // setup shared memory, queue, termination time
     bool check_termination();   // check if current time >= termination time
-    void request_resource();    // send a request message
-    void release_resource();    // send a release message
+    void request_memory(int, bool)
     void send_termination();    // notify oss of termination
     void wait_for_grant();      // block until granted by oss
+    int generate_random_address(); // generate random memory address
 };
 
 

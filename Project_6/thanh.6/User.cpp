@@ -52,25 +52,21 @@ bool User::check_termination() {
            (clock->seconds == termination_sec && clock->nanoseconds >= termination_ns);
 }
 
-void User::request_resource() {
+void User::request_memory(int address, bool is_write) {
     Message msg;
     msg.mtype = 1;
     msg.pid = getpid();
-    msg.action = 1; // MSG_TYPE_REQUEST
-    msg.resource_id = rand() % MAX_RESOURCES;
+    msg.action = 1;                  // MSG_TYPE_REQUEST
+    msg.memory_address = address;    // Requested address
+    msg.operation = is_write ? 1 : 0;
 
+    cout << "USER " << getpid() << " requesting " 
+         << (is_write ? "WRITE" : "READ") 
+         << " access to address " << address << "\n";
+
+    // Send the request to the message queue
     msgsnd(msg_queue_id, &msg, sizeof(Message) - sizeof(long), 0);
     wait_for_grant();
-}
-
-void User::release_resource() {
-    Message msg;
-    msg.mtype = 1;
-    msg.pid = getpid();
-    msg.action = 2; // MSG_TYPE_RELEASE
-    msg.resource_id = rand() % MAX_RESOURCES;
-
-    msgsnd(msg_queue_id, &msg, sizeof(Message) - sizeof(long), 0);
 }
 
 void User::send_termination() {
@@ -86,7 +82,8 @@ void User::send_termination() {
 void User::wait_for_grant() {
     Message response;
     msgrcv(msg_queue_id, &response, sizeof(Message) - sizeof(long), getpid(), 0);
-    // Optionally check response.action
+    cout << "USER " << getpid() << " received grant for address "
+         << response.memory_address << endl;
 }
 
 void User::run() {
@@ -98,15 +95,25 @@ void User::run() {
             break;
         }
 
-        int decision = rand() % 10;
-        if (decision < 5) {
-            request_resource();
-        } else if (decision < 8) {
-            release_resource();
-        } // else do nothing this round
+        // Generate a random address and a random operation
+        int address = generate_random_address();
+        bool is_write = (rand() % 2) == 1;
+
+        // Request memory access (READ or WRITE)
+        request_memory(address, is_write);
     }
 
     detach_clock(clock);
+}
+
+void User::send_termination() {
+    Message msg;
+    msg.mtype = 1;
+    msg.pid = getpid();
+    msg.action = 3; // MSG_TYPE_TERMINATE
+    msg.memory_address = -1;
+
+    msgsnd(msg_queue_id, &msg, sizeof(Message) - sizeof(long), 0);
 }
 
 int main() {

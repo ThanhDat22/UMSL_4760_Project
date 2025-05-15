@@ -106,59 +106,44 @@ void Oss::handle_message() {
         }
     }
 
-    int index = msg.pid % MAX_PROCESSES;
-    int rid = msg.resource_id;
+    int index = msg.pid % MAX_PROCESSES;  // User index
+    int page_number = msg.memory_address / PAGE_SIZE;  // Calculate the page number
+    bool is_write = (msg.operation == 1); // 1 = write, 0 = read
 
-    switch (msg.action) {
-        case 1: { // request
-            log_file << "Master has detected Process P" << index
-                     << " requesting R" << rid << " at time "
-                     << clock->seconds << ":" << clock->nanoseconds << "\n";
+    // Log the memory access request
+    log_file << "Master has detected Process P" << index
+             << " requesting " << (is_write ? "WRITE" : "READ")
+             << " access to page " << page_number
+             << " at time " << clock->seconds << ":" << std::setw(9) << std::setfill('0') 
+             << clock->nanoseconds << "\n";
 
-            if (resource_table.request_resource(index, rid)) {
-                log_file << "Master granting P" << index
-                         << " request R" << rid << " at time "
-                         << clock->seconds << ":" << clock->nanoseconds << "\n";
-            } else {
-                log_file << "Master: no instances of R" << rid
-                         << " available, P" << index
-                         << " added to wait queue at time "
-                         << clock->seconds << ":" << clock->nanoseconds << "\n";
-                wait_queue[rid].push_back(index);
-            }
-            break;
-        }
+    // Request a frame from the Frame Table (handles LRU if needed)
+    int frame = frame_table.request_frame(index, page_number, is_write);
 
-        case 2: { // release
-            resource_table.release_resource(index, rid);
-            log_file << "Master has acknowledged Process P" << index
-                     << " releasing R" << rid << " at time "
-                     << clock->seconds << ":" << clock->nanoseconds << "\n";
-            log_file << "  Resources released : R" << rid << ":1\n";
-            process_wait_queues(); // Check if any processes can be unblocked
-            break;
-        }
-
-        case 3: { // terminate
-            log_file << "Process P" << index << " terminated\n";
-            log_file << "  Resources released: ";
-            for (int r = 0; r < MAX_RESOURCES; ++r) {
-                int released = resource_table.get_resource_info(r)->allocation[index];
-                if (released > 0)
-                    log_file << "R" << r << ":" << released << " ";
-            }
-            log_file << "\n";
-
-            resource_table.release_all_resources(index);
-            active_users.erase(std::remove(active_users.begin(), active_users.end(), msg.pid), active_users.end()); 
-            process_wait_queues(); // Check if any processes can be unblocked
-            break;
-        }
+    if (frame != -1) {
+        // Log successful allocation
+        log_file << "Master granted access to P" << index
+                 << " for page " << page_number << " at frame " << frame
+                 << " at time " << clock->seconds << ":" << std::setw(9) << std::setfill('0')
+                 << clock->nanoseconds << "\n";
+    } else {
+        // Log failure (this should not really happen if LRU is correctly implemented)
+        log_file << "Master could not allocate frame for P" << index
+                 << " requesting page " << page_number
+                 << " at time " << clock->seconds << ":" << std::setw(9) << std::setfill('0')
+                 << clock->nanoseconds << "\n";
     }
 
-    // Unblock user
+    // Prepare the response message
     msg.mtype = msg.pid;
-    msgsnd(msg_q_id, &msg, sizeof(Message) - sizeof(long), 0);
+    msg.memory_address = page_number * PAGE_SIZE;
+    msg.operation = is_write ? 1 : 0;
+
+    // Send back acknowledgment to the user process
+    if (msgsnd(msg_q_id, &msg, sizeof(Message) - sizeof(long), 0) == -1) {
+        perror("msgsnd failed");
+        exit(1);
+    }
 }
 
 void Oss::check_deadlock() {
