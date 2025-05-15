@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <fcntl.h>
 
-Shared_Clock* shared_clock = nullptr;
+//Shared_Clock* shared_clock = nullptr;
 
 Oss::Oss(int max_users, int max_seconds, int launch_interval, const string& logfile_name)
     : msg_q_id(-1), shm_id(-1), shared_clock(NULL),
