@@ -15,12 +15,14 @@ Frame_Table::Frame_Table() {
     }
 }
 
-if (index >= 0 && index < frames.size()) {
+const Frame& Frame_Table::get_frame(int index) const {
+    if (index >= 0 && index < frames.size()) {
         return frames[index];
     } else {
-        cerr << "Error: Frame index out of bounds: " << index << endl;
+        std::cerr << "Error: Frame index out of bounds: " << index << std::endl;
         exit(1);
     }
+}
 
 int Frame_Table::request_frame(int pid, int page_number, bool write) {
     for (int i = 0; i < TOTAL_FRAMES; ++i) {
