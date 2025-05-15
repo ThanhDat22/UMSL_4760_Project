@@ -50,8 +50,14 @@ void User::init() {
 }
 
 bool User::check_termination() {
-    return (clock->seconds > termination_sec) ||
-           (clock->seconds == termination_sec && clock->nanoseconds >= termination_ns);
+    bool ter = (clock->seconds > termination_sec) ||
+                            (clock->seconds == termination_sec && clock->nanoseconds >= termination_ns);
+
+    if (ter) {
+        std::cout << "[DEBUG] User " << getpid() << " reached termination time." << std::endl;
+    }
+    
+    return ter;
 }
 
 void User::request_memory(int address, bool is_write) {
@@ -84,6 +90,7 @@ void User::run() {
         usleep(10000); // short delay to simulate computation
 
         if (check_termination()) {
+            std::cout << "[DEBUG] User " << getpid() << " is sending termination message.\n";
             send_termination();
             break;
         }
@@ -110,6 +117,7 @@ void User::send_termination() {
         perror("msgsnd failed");
         exit(1);
     }
+    std::cout << "[DEBUG] User " << getpid() << " sent termination message.\n";
 }
 
 int User::generate_random_address() {

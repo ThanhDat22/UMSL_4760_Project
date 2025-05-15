@@ -101,7 +101,6 @@ void Oss::handle_message() {
 
     if (result == -1) {
         if (errno == ENOMSG) {
-            // No message in queue — not an error
             return;
         } else {
             perror("msgrcv failed");
@@ -109,15 +108,28 @@ void Oss::handle_message() {
         }
     }
 
-    int index = msg.pid % MAX_PROCESSES;  // User index
-    int page_number = msg.memory_address / PAGE_SIZE;  // Calculate the page number
-    bool is_write = (msg.operation == 1); // 1 = write, 0 = read
+    int index = msg.pid % MAX_PROCESSES;
+    int page_number = msg.memory_address / PAGE_SIZE;
+    bool is_write = (msg.operation == 1);
 
-    //std::cout << "[DEBUG] OSS received address: " << msg.memory_address << "\n";
-    //std::cout << "[DEBUG] Calculated page number: " << page_number << "\n";
+    if (msg.action == 3) {
+        log_file << "Master has detected Process P" << index 
+                 << " is terminating at time " 
+                 << shared_clock->seconds << ":" 
+                 << setw(9) << setfill('0') << shared_clock->nanoseconds << endl;
 
-    if (msg.memory_address < 0 || msg.memory_address >= TOTAL_FRAMES * PAGE_SIZE) {
-        //std::cerr << "ERROR: Memory address " << msg.memory_address << " is out of bounds!\n";
+        frame_table.release_frame(index);  // Release all frames
+        active_users.erase(std::remove(active_users.begin(), active_users.end(), msg.pid), active_users.end());
+
+        log_file << "Master has released all frames for Process P" << index << "\n";
+
+        // Remove from any wait queues
+        process_wait_queues();
+        return;
+    }
+
+    if (msg.memory_address < 0 || msg.memory_address > TOTAL_FRAMES * PAGE_SIZE) {
+        std::cerr << "ERROR: Memory address " << msg.memory_address << " is out of bounds!\n";
         exit(1);
     }
 
@@ -128,7 +140,7 @@ void Oss::handle_message() {
              << " at time " << shared_clock->seconds << ":" 
              << setw(9) << setfill('0') << shared_clock->nanoseconds << endl;
 
-    // Request a frame from the Frame Table (handles LRU if needed)
+    // Request a frame from the Frame Table
     int frame = frame_table.request_frame(index, page_number, is_write);
 
     if (frame != -1) {
@@ -138,27 +150,30 @@ void Oss::handle_message() {
                  << " at time " << shared_clock->seconds << ":"
                  << setw(9) << setfill('0') << shared_clock->nanoseconds << endl;
     } else {
-        // If no frame available, we have a serious memory issue
+        // Log if no frame is available
         log_file << "ERROR: Master could not allocate frame for P" << index
                  << " requesting page " << page_number
                  << " at time " << shared_clock->seconds << ":"
-                 << setw(9) << setfill('0') << shared_clock->nanoseconds << endl;;
+                 << setw(9) << setfill('0') << shared_clock->nanoseconds << endl;
+    }
+
+    if (frame_table.evict_occurred()) {
+        auto evicted = frame_table.get_last_eviction();
+        if (evicted.pid != -1) {
+            log_file << "Page Eviction: Evicted Process P" << evicted.pid
+                     << ", Page " << evicted.page_number
+                     << " from Frame " << evicted.frame_index
+                     << " at time " << shared_clock->seconds << ":"
+                     << setw(9) << setfill('0') << shared_clock->nanoseconds << "\n";
+        }
     }
 
     // Prepare the response message
-    if (frame_table.evict_occurred()) {
-        auto evicted = frame_table.get_last_eviction();
-        log_file << "Page Eviction: Evicted Process P" << evicted.pid
-                 << ", Page " << evicted.page_number
-                 << " from Frame " << evicted.frame_index
-                 << " at time " << shared_clock->seconds << ":"
-                 << setw(9) << setfill('0') << shared_clock->nanoseconds << "\n";
-    }
-
     msg.mtype = msg.pid;
     msg.memory_address = frame * PAGE_SIZE;
     msg.operation = is_write ? 1 : 0;
 
+    // Send the message back to the user
     if (msgsnd(msg_q_id, &msg, sizeof(Message) - sizeof(long), 0) == -1) {
         perror("msgsnd failed");
         exit(1);
