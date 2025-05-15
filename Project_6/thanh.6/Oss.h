@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <fstream>
 #include <cerrno>
+#include <iomanip>
 
 const int MAX_USER = 40; // Total number of user created over lifetime
 const int MAX_ACTIVE = 18; // Maximum number of active user at any time
@@ -49,7 +50,6 @@ private:
     void setup_ipc();
     void launch_user();
     void handle_message();
-    void check_deadlock();
     void log_state();
     void process_wait_queues();
     void cleanup();

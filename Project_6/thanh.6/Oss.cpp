@@ -16,7 +16,7 @@ Oss::Oss(int max_users, int max_seconds, int launch_interval, const string& logf
       launch_interval_ns(launch_interval * 1000000ULL), log_file_name(logfile_name) {
 
     // Open log file
-    log_file.open(log_file_name.c_str(), std::ios::out | std::ios::trunc);
+    log_file.open(log_file_name.c_str(), ios::out | ios::trunc);
     if (!log_file.is_open()) {
         cerr << "Failed to open log file: " << log_file_name << endl;
         exit(1);
@@ -113,8 +113,8 @@ void Oss::handle_message() {
     log_file << "Master has detected Process P" << index
              << " requesting " << (is_write ? "WRITE" : "READ")
              << " access to page " << page_number
-             << " at time " << clock->seconds << ":" << std::setw(9) << std::setfill('0') 
-             << clock->nanoseconds << "\n";
+             << " at time " << clock->seconds << ":" 
+             << setw(9) << setfill('0') << clock->nanoseconds << endl;
 
     // Request a frame from the Frame Table (handles LRU if needed)
     int frame = frame_table.request_frame(index, page_number, is_write);
@@ -123,67 +123,36 @@ void Oss::handle_message() {
         // Log successful allocation
         log_file << "Master granted access to P" << index
                  << " for page " << page_number << " at frame " << frame
-                 << " at time " << clock->seconds << ":" << std::setw(9) << std::setfill('0')
-                 << clock->nanoseconds << "\n";
+                 << " at time " << clock->seconds << ":"
+                 << setw(9) << setfill('0') << clock->nanoseconds << endl;
     } else {
-        // Log failure (this should not really happen if LRU is correctly implemented)
-        log_file << "Master could not allocate frame for P" << index
+        // If no frame available, we have a serious memory issue
+        log_file << "ERROR: Master could not allocate frame for P" << index
                  << " requesting page " << page_number
-                 << " at time " << clock->seconds << ":" << std::setw(9) << std::setfill('0')
-                 << clock->nanoseconds << "\n";
+                 << " at time " << clock->seconds << ":"
+                 << setw(9) << setfill('0') << clock->nanoseconds << endl;;
     }
 
     // Prepare the response message
+    if (frame_table.evict_occurred()) {
+        auto evicted = frame_table.get_last_eviction();
+        log_file << "Page Eviction: Evicted Process P" << evicted.pid
+                 << ", Page " << evicted.page_number
+                 << " from Frame " << evicted.frame_index
+                 << " at time " << clock->seconds << ":"
+                 << setw(9) << setfill('0') << clock->nanoseconds << "\n";
+    }
+
     msg.mtype = msg.pid;
-    msg.memory_address = page_number * PAGE_SIZE;
+    msg.memory_address = frame * PAGE_SIZE;
     msg.operation = is_write ? 1 : 0;
 
-    // Send back acknowledgment to the user process
     if (msgsnd(msg_q_id, &msg, sizeof(Message) - sizeof(long), 0) == -1) {
         perror("msgsnd failed");
         exit(1);
     }
 }
 
-void Oss::check_deadlock() {
-    log_file << "Master running deadlock detection at time "
-             << clock->seconds << ":" << clock->nanoseconds << "\n";
-
-    int deadlocked[MAX_PROCESSES];
-    int count = detect_deadlock(resource_table, deadlocked);
-
-    if (count > 0) {
-        log_file << "Processes ";
-        for (int i = 0; i < count; ++i) {
-            log_file << "P" << deadlocked[i];
-            if (i < count - 1) log_file << ", ";
-        }
-        log_file << " deadlocked\n";
-
-        // Terminate one at a time
-        int victim_index = deadlocked[0];
-        pid_t victim_pid = active_users[victim_index];
-        log_file << "Master terminating P" << victim_index << " to resolve deadlock\n";
-
-        kill(victim_pid, SIGTERM);
-        waitpid(victim_pid, NULL, 0);
-
-        log_file << "Process P" << victim_index << " terminated\n";
-        log_file << "  Resources released: ";
-        for (int r = 0; r < MAX_RESOURCES; ++r) {
-            int released = resource_table.get_resource_info(r)->allocation[victim_index];
-            if (released > 0)
-                log_file << "R" << r << ":" << released << " ";
-        }
-        log_file << "\n";
-
-        resource_table.release_all_resources(victim_index);
-        active_users.erase(std::remove(active_users.begin(), active_users.end(), victim_pid), active_users.end());
-        process_wait_queues();
-    } else {
-        log_file << "No deadlocks detected.\n";
-    }
-}
 
 void Oss::log_state() {
     log_file << "OSS State at " << clock->seconds << "s " << clock->nanoseconds << "ns\n";
@@ -269,20 +238,20 @@ int main(int argc, char* argv[]) {
     int n_proc = 40;
     int max_seconds = 20;
     int launch_interval_ms = 500;
-    std::string logfile_name = "logfile";
+    string logfile_name = "logfile";
     
     int opt;
     while ((opt = getopt(argc, argv, "hn:s:i:f:")) != -1) {
         switch (opt) {
             case 'h':
-                std::cout << "Usage: oss [-h] [-n proc] [-s simul] [-i intervalMs] [-f logfile]\n";
+                cout << "Usage: oss [-h] [-n proc] [-s simul] [-i intervalMs] [-f logfile]\n";
                 return 0;
             case 'n': n_proc = atoi(optarg); break;
             case 's': max_seconds = atoi(optarg); break;
             case 'i': launch_interval_ms = atoi(optarg); break;
             case 'f': logfile_name = optarg; break;
             default:
-                std::cerr << "Unknown option. Use -h for help.\n";
+                cerr << "Unknown option. Use -h for help.\n";
                 return 1;
         }
     }

@@ -12,7 +12,6 @@ using std::map;
 
 const int TOTAL_FRAMES = 256;
 const int PAGE_SIZE = 512;
-const int MAX_PROCESSES = 18;
 
 struct Frame {
     int pid;
