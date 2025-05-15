@@ -38,10 +38,7 @@ Frame_Table.o: Frame_Table.cpp Frame_Table.h
 
 # Clean object files and executables
 clean:
-	rm -f *.o $(TARGETS) logfile
-	rm -f msgqueue.key
-	rm -f *.out
-	rm -f *.log
+	rm -f *.o oss user logfile msgqueue.key .log
 
 # Run the main executable
 run:
