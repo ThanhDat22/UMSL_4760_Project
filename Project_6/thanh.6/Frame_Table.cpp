@@ -16,7 +16,7 @@ Frame_Table::Frame_Table() {
 }
 
 const Frame& Frame_Table::get_frame(int index) const {
-    if (index >= 0 && index < (int)(frames.size()) {
+    if (index >= 0 && index < (int)(frames.size())) {
         return frames[index];
     } else {
         cerr << "Error: Frame index out of bounds: " << index << endl;
@@ -86,7 +86,7 @@ void Frame_Table::release_frame(int pid) {
 
 void Frame_Table::display_frame_table() {
     cout << "------------- Frame Table State --------------\n";
-    for (int i = 0; i < (int)(frames.size(); ++i) {
+    for (int i = 0; i < (int)(frames.size(); ++i)) {
         if (frames[i].pid != -1) {
             cout << "Frame " << i 
                       << " | PID: " << frames[i].pid 
