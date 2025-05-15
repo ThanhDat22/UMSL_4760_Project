@@ -26,7 +26,7 @@ const Frame& Frame_Table::get_frame(int index) const {
 
 int Frame_Table::request_frame(int pid, int page_number, bool write) {
     for (int i = 0; i < TOTAL_FRAMES; ++i) {
-        if (frames[i].pid == -1) { // Find a free frame
+        if (frames[i].pid == -1) {
             frames[i].pid = pid;
             frames[i].page_number = page_number;
             frames[i].dirty_bit = write;
@@ -38,16 +38,19 @@ int Frame_Table::request_frame(int pid, int page_number, bool write) {
 
     // If all frames are full, find the LRU frame to replace
     int lru_index = find_LRU_frame();
-
     Frame &lru_frame = frames[lru_index];
 
+    // Check boundary
+    if (page_number >= TOTAL_FRAMES) {
+        std::cerr << "ERROR: Page number " << page_number << " is out of bounds!\n";
+        exit(1);
+    }
+
     // Replace the LRU frame
-    // Save eviction info
     last_eviction.pid = lru_frame.pid;
     last_eviction.page_number = lru_frame.page_number;
     last_eviction.frame_index = lru_index;
 
-    // Perform the eviction
     lru_frame.pid = pid;
     lru_frame.page_number = page_number;
     lru_frame.dirty_bit = write;
