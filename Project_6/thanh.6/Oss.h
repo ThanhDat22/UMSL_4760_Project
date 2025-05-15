@@ -33,7 +33,7 @@ private:
     // Data fields
     int msg_q_id; // Message queue ID
     int shm_id; // Shared memory ID
-    Shared_Clock* clock; // Pointer to shared clock
+    Shared_Clock* shared_clock; // Pointer to shared clock
 
     ofstream log_file;
     

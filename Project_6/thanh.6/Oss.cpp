@@ -11,7 +11,7 @@
 
 
 Oss::Oss(int max_users, int max_seconds, int launch_interval, const string& logfile_name)
-    : msg_q_id(-1), shm_id(-1), clock(NULL),
+    : msg_q_id(-1), shm_id(-1), shared_clock(NULL),
       max_user(max_users), max_simulation_seconds(max_seconds),
       launch_interval_ns(launch_interval * 1000000ULL), log_file_name(logfile_name) {
 
@@ -37,8 +37,8 @@ Oss::~Oss() {
 // Set up IPC mechanisms
 void Oss::setup_ipc() {
     // Attach shared clock
-    clock = attach_clock(&shm_id, 1); // attach to existing shared clock
-    if (!clock) {
+    shared_clock = attach_clock(&shm_id, 1); // attach to existing shared clock
+    if (!shared_clock) {
         cerr << "OSS failed to attach to clock\n";
         exit(1);
     }
@@ -113,8 +113,8 @@ void Oss::handle_message() {
     log_file << "Master has detected Process P" << index
              << " requesting " << (is_write ? "WRITE" : "READ")
              << " access to page " << page_number
-             << " at time " << clock->seconds << ":" 
-             << setw(9) << setfill('0') << clock->nanoseconds << endl;
+             << " at time " << shared_clock->seconds << ":" 
+             << setw(9) << setfill('0') << shared_clock->nanoseconds << endl;
 
     // Request a frame from the Frame Table (handles LRU if needed)
     int frame = frame_table.request_frame(index, page_number, is_write);
@@ -123,14 +123,14 @@ void Oss::handle_message() {
         // Log successful allocation
         log_file << "Master granted access to P" << index
                  << " for page " << page_number << " at frame " << frame
-                 << " at time " << clock->seconds << ":"
-                 << setw(9) << setfill('0') << clock->nanoseconds << endl;
+                 << " at time " << shared_clock->seconds << ":"
+                 << setw(9) << setfill('0') << shared_clock->nanoseconds << endl;
     } else {
         // If no frame available, we have a serious memory issue
         log_file << "ERROR: Master could not allocate frame for P" << index
                  << " requesting page " << page_number
-                 << " at time " << clock->seconds << ":"
-                 << setw(9) << setfill('0') << clock->nanoseconds << endl;;
+                 << " at time " << shared_clock->seconds << ":"
+                 << setw(9) << setfill('0') << shared_clock->nanoseconds << endl;;
     }
 
     // Prepare the response message
@@ -139,8 +139,8 @@ void Oss::handle_message() {
         log_file << "Page Eviction: Evicted Process P" << evicted.pid
                  << ", Page " << evicted.page_number
                  << " from Frame " << evicted.frame_index
-                 << " at time " << clock->seconds << ":"
-                 << setw(9) << setfill('0') << clock->nanoseconds << "\n";
+                 << " at time " << shared_clock->seconds << ":"
+                 << setw(9) << setfill('0') << shared_clock->nanoseconds << "\n";
     }
 
     msg.mtype = msg.pid;
@@ -156,7 +156,7 @@ void Oss::handle_message() {
 
 void Oss::log_state() {
     log_file << "================== OSS State ==================\n";
-    log_file << "Time: " << clock->seconds << "s " << clock->nanoseconds << "ns\n";
+    log_file << "Time: " << shared_clock->seconds << "s " << shared_clock->nanoseconds << "ns\n";
 
     // Display Active Users
     log_file << "Active Users: ";
@@ -189,15 +189,15 @@ void Oss::run() {
 
     while (total_spawned < MAX_USER || !active_users.empty()) {
 
-        clock->nanoseconds += 10000;
-        if (clock->nanoseconds >= 1000000000) {
-            clock->seconds++;
-            clock->nanoseconds -= 1000000000;
+        shared_clock->nanoseconds += 10000;
+        if (shared_clock->nanoseconds >= 1000000000) {
+            shared_clock->seconds++;
+            shared_clock->nanoseconds -= 1000000000;
         }
 
         handle_message();
 
-        unsigned long long current_ns = clock->seconds * 1000000000ULL + clock->nanoseconds;
+        unsigned long long current_ns = shared_clock->seconds * 1000000000ULL + shared_clock->nanoseconds;
 
         if (total_spawned < MAX_USER && active_users.size() < MAX_ACTIVE && current_ns >= next_launch_ns) {
             launch_user();
@@ -237,8 +237,8 @@ void Oss::process_wait_queues() {
                 log_file << "Master granting P" << p
                          << " access to page " << page_number 
                          << " at frame " << frame
-                         << " at time " << clock->seconds << ":"
-                         << std::setw(9) << std::setfill('0') << clock->nanoseconds << "\n";
+                         << " at time " << shared_clock->seconds << ":"
+                         << std::setw(9) << std::setfill('0') << shared_clock->nanoseconds << "\n";
 
                 // Send grant message to unblock the user
                 Message msg;
@@ -291,9 +291,9 @@ int main(int argc, char* argv[]) {
 
 void Oss::cleanup() {
     // Detach shared clock
-    if (clock) {
-        detach_clock(clock);
-        clock = NULL;
+    if (shared_clock) {
+        detach_clock(shared_clock);
+        shared_clock = NULL;
     }
 
     // Remove shared memory segment
@@ -316,5 +316,5 @@ void Oss::cleanup() {
     active_users.clear();
 
     log_file << "OSS cleanup complete at time "
-             << clock->seconds << ":" << clock->nanoseconds << "\n";
+             << shared_clock->seconds << ":" << shared_clock->nanoseconds << "\n";
 }
