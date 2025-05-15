@@ -111,8 +111,10 @@ void User::send_termination() {
 }
 
 int User::generate_random_address() {
-    int page_number = rand() % TOTAL_FRAMES;    // Choose a random page number
-    return page_number * PAGE_SIZE;
+    int max_address = TOTAL_FRAMES * PAGE_SIZE;
+    int address = (rand() % max_address);
+
+    return (address / PAGE_SIZE) * PAGE_SIZE;
 }
 
 int main() {
