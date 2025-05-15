@@ -30,8 +30,8 @@ User.o: User.cpp User.h Message.h Shared_Clock.h
 Shared_Clock.o: Shared_Clock.cpp Shared_Clock.h
 	$(CXX) $(CXXFLAGS) -c $<
 
-Message.o: Message.cpp Message.h
-	$(CXX) $(CXXFLAGS) -c $<
+Message.o: Message.h
+	touch Message.o
 
 Frame_Table.o: Frame_Table.cpp Frame_Table.h
 	$(CXX) $(CXXFLAGS) -c $<
