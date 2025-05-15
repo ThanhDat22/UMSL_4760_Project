@@ -1,9 +1,14 @@
 #include "Frame_Table.h"
 
+extern Shared_Clock* clock;
+
 Frame_Table::Frame_Table() {
     frames.resize(TOTAL_FRAMES);
+    eviction_flag = false;
+
+    // Initialize all frames as free
     for (int i = 0; i < TOTAL_FRAMES; ++i) {
-        frames[i].pid = -1; // Initialize all frames to be free
+        frames[i].pid = -1; // -1 indicates a free frame
         frames[i].page_number = -1;
         frames[i].dirty_bit = false;
         frames[i].last_access_time = 0;
@@ -16,8 +21,9 @@ int Frame_Table::request_frame(int pid, int page_number, bool write) {
             frames[i].pid = pid;
             frames[i].page_number = page_number;
             frames[i].dirty_bit = write;
-            frames[i].last_access_time = clock(); // get the current time
-            return &frames[i] - &frames[0]; // Return the index of the frame
+            frames[i].last_access_time = (clock->seconds * 1000000000ULL) + clock->nanoseconds;
+            eviction_flag = false;
+            return i;
         }
     }
 
@@ -27,31 +33,40 @@ int Frame_Table::request_frame(int pid, int page_number, bool write) {
     Frame &lru_frame = frames[lru_index];
 
     // Replace the LRU frame
+    // Save eviction info
+    last_eviction.pid = lru_frame.pid;
+    last_eviction.page_number = lru_frame.page_number;
+    last_eviction.frame_index = lru_index;
+
+    // Perform the eviction
     lru_frame.pid = pid;
     lru_frame.page_number = page_number;
     lru_frame.dirty_bit = write;
-    lru_frame.last_access_time = clock(); // get the current time
-    return lru_index; // Return the index of the replaced frame
+    lru_frame.last_access_time = (clock->seconds * 1000000000ULL) + clock->nanoseconds;
+    eviction_flag = true;
+
+    return lru_index;
 }
 
 
 int Frame_Table::find_LRU_frame() {
     int lru_index = 0;
     unsigned long long oldest_time = frames[0].last_access_time;
+
     for (int i = 1; i < TOTAL_FRAMES; ++i) {
         if (frames[i].last_access_time < oldest_time) {
             oldest_time = frames[i].last_access_time;
             lru_index = i;
         }
     }
-    return lru_index; // Return the index of the LRU frame
+    return lru_index;
 }
 
 
 void Frame_Table::release_frame(int pid) {
     for (int i = 0; i < TOTAL_FRAMES; ++i) {
-        if (frames[i].pid == pid) { // Find the frame for the process
-            frames[i].pid = -1; // Release the frame
+        if (frames[i].pid == pid) {
+            frames[i].pid = -1; // Free the frame
             frames[i].page_number = -1;
             frames[i].dirty_bit = false;
             frames[i].last_access_time = 0;
@@ -61,15 +76,25 @@ void Frame_Table::release_frame(int pid) {
 
 
 void Frame_Table::display_frame_table() {
-    cout << "Frame Table State:" << endl;
+    cout << "Frame Table State:\n";
     for (int i = 0; i < frames.size(); ++i) {
         if (frames[i].pid != -1) {
             cout << "Frame " << i << ": PID = " << frames[i].pid
-                 << ", Page Number = " << frames[i].page_number
-                 << ", Dirty Bit = " << frames[i].dirty_bit
-                 << ", Last Access Time = " << frames[i].last_access_time << endl;
+                      << ", Page Number = " << frames[i].page_number
+                      << ", Dirty Bit = " << frames[i].dirty_bit
+                      << ", Last Access Time = " << frames[i].last_access_time << "\n";
         } else {
-            cout << "Frame " << i << ": Free" << endl;
+            cout << "Frame " << i << ": Free\n";
         }
     }
 }
+
+bool Frame_Table::evict_occurred() {
+    return eviction_flag;
+}
+
+EvictionInfo Frame_Table::get_last_eviction() {
+    eviction_flag = false; // Reset the flag after querying
+    return last_eviction;
+}
+
