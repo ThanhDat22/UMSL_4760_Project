@@ -109,6 +109,11 @@ void Oss::handle_message() {
     int page_number = msg.memory_address / PAGE_SIZE;  // Calculate the page number
     bool is_write = (msg.operation == 1); // 1 = write, 0 = read
 
+    if (msg.memory_address < 0 || msg.memory_address >= TOTAL_FRAMES * PAGE_SIZE) {
+        std::cerr << "ERROR: Memory address " << msg.memory_address << " is out of bounds!\n";
+        exit(1);
+    }
+
     // Log the memory access request
     log_file << "Master has detected Process P" << index
              << " requesting " << (is_write ? "WRITE" : "READ")

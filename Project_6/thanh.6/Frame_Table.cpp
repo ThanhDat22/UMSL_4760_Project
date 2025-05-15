@@ -25,6 +25,12 @@ const Frame& Frame_Table::get_frame(int index) const {
 }
 
 int Frame_Table::request_frame(int pid, int page_number, bool write) {
+
+    if (page_number < 0 || page_number >= TOTAL_FRAMES) {
+        cerr << "ERROR: Page number " << page_number << " is out of bounds!\n";
+        exit(1);
+    }
+
     for (int i = 0; i < TOTAL_FRAMES; ++i) {
         if (frames[i].pid == -1) {
             frames[i].pid = pid;
