@@ -42,7 +42,7 @@ int Frame_Table::request_frame(int pid, int page_number, bool write) {
             frames[i].pid = pid;
             frames[i].page_number = page_number;
             frames[i].dirty_bit = write;
-            frames[i].last_access_time = (shared_clock->seconds * 1000000000ULL) + shared_clock->nanoseconds;
+            frames[i].last_access_time = (this->shared_clock->seconds * 1000000000ULL) + this->shared_clock->nanoseconds;
             eviction_flag = false;
             std::cout << "[DEBUG] Frame " << i << " allocated to page " << page_number << "\n";
             return i;
@@ -67,7 +67,7 @@ int Frame_Table::request_frame(int pid, int page_number, bool write) {
     lru_frame.pid = pid;
     lru_frame.page_number = page_number;
     lru_frame.dirty_bit = write;
-    lru_frame.last_access_time = (shared_clock->seconds * 1000000000ULL) + shared_clock->nanoseconds;
+    lru_frame.last_access_time = (this->shared_clock->seconds * 1000000000ULL) + this->shared_clock->nanoseconds;
     eviction_flag = true;
 
     return lru_index;
@@ -125,11 +125,11 @@ EvictionInfo Frame_Table::get_last_eviction() {
     return last_eviction;
 }
 
-void Frame_Table::set_shared_clock(Shared_Clock* clock) {
-    shared_clock = clock;
-    if (!shared_clock) {
+void Frame_Table::set_shared_clock() {
+    shared_clock = ::shared_clock;
+    if (!this->shared_clock) {
         std::cerr << "ERROR: shared_clock is still NULL after set_shared_clock!\n";
         exit(1);
     }
-    std::cout << "[DEBUG] Frame_Table linked to shared clock at address: " << shared_clock << "\n";
+    std::cout << "[DEBUG] Frame_Table linked to shared clock at address: " << this->shared_clock << "\n";
 }

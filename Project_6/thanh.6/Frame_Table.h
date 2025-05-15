@@ -31,7 +31,7 @@ struct Frame {
 class Frame_Table {
 public:
     Frame_Table();
-    void set_shared_clock(Shared_Clock*);
+    void set_shared_clock();
     const Frame& get_frame(int index) const;
     int request_frame(int, int, bool); // Request a frame for a process
     void release_frame(int); // Release a frame for a process
@@ -44,6 +44,7 @@ private:
     int find_LRU_frame();
     bool eviction_flag;
     EvictionInfo last_eviction;
+    Shared_Clock* shared_clock; // Pointer to the shared clock
 };
 
 

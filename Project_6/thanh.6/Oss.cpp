@@ -45,7 +45,7 @@ void Oss::setup_ipc() {
         std::cout << "[DEBUG] OSS attached to shared clock at address: " << shared_clock << "\n";
     }
 
-    frame_table.set_shared_clock(shared_clock);
+    frame_table.set_shared_clock();
 
     // Create message queue
     int fd = open(MSG_QUEUE_KEY_PATH, O_CREAT | O_RDWR, 0666);
