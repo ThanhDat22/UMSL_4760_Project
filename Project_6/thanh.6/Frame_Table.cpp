@@ -1,7 +1,5 @@
 #include "Frame_Table.h"
 
-extern Shared_Clock* shared_clock;
-
 Frame_Table::Frame_Table() {
     frames.resize(TOTAL_FRAMES);
     eviction_flag = false;
@@ -127,3 +125,11 @@ EvictionInfo Frame_Table::get_last_eviction() {
     return last_eviction;
 }
 
+void Frame_Table::set_shared_clock(Shared_Clock* clock) {
+    shared_clock = clock;
+    if (!shared_clock) {
+        std::cerr << "ERROR: shared_clock is still NULL after set_shared_clock!\n";
+        exit(1);
+    }
+    std::cout << "[DEBUG] Frame_Table linked to shared clock at address: " << shared_clock << "\n";
+}
