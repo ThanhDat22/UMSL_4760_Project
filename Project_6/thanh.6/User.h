@@ -3,6 +3,7 @@
 
 #include "Shared_Clock.h"
 #include "Message.h"
+#include "Frame_Table.h"
 
 #include <sys/ipc.h>
 #include <sys/msg.h>
