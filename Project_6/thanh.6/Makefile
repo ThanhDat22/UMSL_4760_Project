@@ -46,4 +46,3 @@ clean:
 # Run the main executable
 run:
 	./oss -n 5 -s 20 -i 500 -f logfile.log
-
